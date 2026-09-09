@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CodeLab
 
-## Getting Started
+CodeLab is a focused Low Level Design (LLD) practice platform that helps developers practice designing real-world software systems and improve their object-oriented design skills through structured feedback.
 
-First, run the development server:
+The platform provides a set of LLD problems where learners can design their solution, submit it, receive AI-powered evaluation, and review their previous attempts.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Practice real-world Low Level Design problems
+- 5 LLD problems covering common software systems
+- Read problem descriptions and requirements
+- Submit design solutions
+- AI-powered solution evaluation using Google Gemini
+- Structured feedback for every submission
+- Score out of 10
+- Feedback across multiple design dimensions
+- View strengths and areas for improvement
+- Get suggestions for improving the design
+- Store attempts and feedback persistently
+- Review previous submissions through Attempt History
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Problems
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+CodeLab currently includes:
 
-## Learn More
+1. Parking Lot
+2. Elevator System
+3. Vending Machine
+4. Movie Ticket Booking
+5. ATM System
 
-To learn more about Next.js, take a look at the following resources:
+Each problem focuses on important LLD concepts such as classes, interfaces, responsibilities, relationships, extensibility, and edge-case handling.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Core User Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+Choose a Problem
+       ↓
+Read Requirements
+       ↓
+Design Your Solution
+       ↓
+Submit Solution
+       ↓
+AI Evaluation
+       ↓
+Score + Structured Feedback
+       ↓
+Review Attempt History
+       ↓
+Try Another Problem
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Evaluation System
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+>>> Each submitted solution is evaluated across four categories:
+
+| Category | Maximum Score |
+|----------|--------------:|
+| Design | 4 |
+| Extensibility | 3 |
+| Code Quality | 2 |
+| Edge Cases | 1 |
+| **Total** | **10** |
+
+The evaluation provides:
+
+- Strengths
+- Areas for improvement
+- Practical suggestions
+
+The AI generates scores for the individual categories, while the application calculates the final score out of 10 from those category scores.
+
+This makes the evaluation structured and consistent across different submissions.
+
+## Technology Stack
+
+- Frontend: Next.js, React, TypeScript
+- Styling: Tailwind CSS
+- Backend Platform: Supabase
+- Database: PostgreSQL
+- AI Evaluation: Google Gemini API
+- Icons: Lucide React
+- Testing: Vitest
+- Deployment: Vercel
+
+## Architecture
+
+>>> CodeLab follows a simple architecture focused on the core LLD practice workflow.
+
+                    CodeLab
+                       │
+                       ↓
+                Next.js Application
+                       │
+             ┌─────────┴─────────┐
+             ↓                   ↓
+       Supabase Client       Gemini API
+             │                   │
+             ↓                   ↓
+       Supabase API         AI Evaluation
+             │
+             ↓
+       PostgreSQL
+             │
+       ┌─────┴─────┐
+       ↓           ↓
+   Problems     Attempts
+                    │
+                    ↓
+                 Feedback
+
+                 ## Database Design
+
+>>> The main database entities are:
+
+problems
+   │
+   │ problem_id
+   ↓
+attempts
+   │
+   │ attempt_id
+   ↓
+feedback
+
+- **Problems:** Stores LLD problems.
+- **Attempts:** Stores user submissions.
+- **Feedback:** Stores evaluation results.
+
+## AI Evaluation
+
+Google Gemini evaluates submitted solutions and provides scores, strengths, weaknesses, and suggestions.
+
+## Project Structure
+
+CodeLab/
+├── app/
+│   ├── api/
+│   ├── feedback/
+│   ├── history/
+│   └── problems/
+├── components/
+├── lib/
+│   ├── evaluation/
+│   └── supabase/
+├── public/
+├── package.json
+└── README.md
+
+
+## Author
+Ashish Mahwar
