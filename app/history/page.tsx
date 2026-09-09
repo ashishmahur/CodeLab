@@ -245,7 +245,7 @@ export default function HistoryPage() {
             Back to Problems
           </Link>
         </div>
-
+        
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Editor from "@monaco-editor/react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -384,7 +385,7 @@ export default function ProblemPage() {
               </h2>
 
               <p className="mt-1 text-sm text-zinc-500">
-                Understand the requirements before designing your solution.
+                Understand the requirements before writing your solution.
               </p>
             </div>
 
@@ -445,7 +446,7 @@ export default function ProblemPage() {
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
               <h2 className="text-lg font-semibold text-white">
-                Your Solution
+                Solution Here
               </h2>
 
               <p className="mt-1 text-sm text-zinc-500">
@@ -454,17 +455,34 @@ export default function ProblemPage() {
               </p>
             </div>
 
-            <textarea
-              value={solution}
-              onChange={(event) => {
-                setSolution(event.target.value);
-                setSubmitted(false);
-                setError("");
-              }}
-              placeholder={problem.example}
-              className="min-h-0 flex-1 resize-none bg-zinc-950 p-5 font-mono text-sm leading-6 text-zinc-200 outline-none placeholder:text-zinc-700"
-              spellCheck={false}
-            />
+            <div className="min-h-0 flex-1 overflow-hidden bg-zinc-950">
+              <Editor
+                height="100%"
+                language="typescript"
+                theme="vs-dark"
+                value={solution}
+                onChange={(value) => {
+                  setSolution(value ?? "");
+                  setSubmitted(false);
+                  setError("");
+                }}
+                options={{
+                  minimap: {
+                    enabled: false,
+                  },
+                  fontSize: 14,
+                  lineHeight: 22,
+                  wordWrap: "on",
+                  padding: {
+                    top: 16,
+                    bottom: 16,
+                  },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                }}
+              />
+            </div>
 
             <div className="shrink-0 border-t border-zinc-600 px-5 py-3">
               <div className="flex items-center justify-between">

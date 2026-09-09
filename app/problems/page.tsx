@@ -59,7 +59,7 @@ const problems = [
 export default function ProblemsPage() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
-      <div className="mx-auto max-w-[1500px] px-8 py-14 lg:px-14">
+      <div className="mx-auto max-w-[1500px] px-8 py-6 lg:px-14">
         {/* Heading */}
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
@@ -74,10 +74,10 @@ export default function ProblemsPage() {
             Pick a problem, design your solution, and get feedback on your
             approach.
           </p>
-        </div>
+        </div>  
 
         {/* Problem Cards */}
-        <div className="mt-12 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
           {problems.map((problem) => {
             const Icon = problem.icon;
 
