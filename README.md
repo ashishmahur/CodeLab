@@ -56,14 +56,15 @@ Try Another Problem
 ## Evaluation System
 
 >>> Each submitted solution is evaluated across four categories:
-
-| Category | Maximum Score |
-|----------|--------------:|
-| Design | 4 |
-| Extensibility | 3 |
-| Code Quality | 2 |
-| Edge Cases | 1 |
-| Total | 10 |
+---------------------------------
+| Category      | Maximum Score |
+|---------------|---------------|
+| Designc       | 4             |
+| Extensibility | 3             |
+| Code Quality  | 2             |
+| Edge Cases    | 1             |
+| Total         | 10            |
+---------------------------------
 
 The evaluation provides:
 
