@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CodeLab",
   description:
-    "Practice Low Level Design problems and improve your design skills.",
+    "Practice Low Level Design problems and improve your object-oriented design skills.",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Navbar />
-        {children}
+        {children}  
       </body>
     </html>
   );

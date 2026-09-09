@@ -9,6 +9,8 @@ The platform provides a set of LLD problems where learners can design their solu
 - Practice real-world Low Level Design problems
 - 5 LLD problems covering common software systems
 - Read problem descriptions and requirements
+- Write solutions using the Monaco Editor
+- Support for programming languages such as Python and TypeScript
 - Submit design solutions
 - AI-powered solution evaluation using Google Gemini
 - Structured feedback for every submission
@@ -18,6 +20,7 @@ The platform provides a set of LLD problems where learners can design their solu
 - Get suggestions for improving the design
 - Store attempts and feedback persistently
 - Review previous submissions through Attempt History
+- About page with project information and author details
 
 ## Available Problems
 
@@ -29,11 +32,10 @@ CodeLab currently includes:
 4. Movie Ticket Booking
 5. ATM System
 
-Each problem focuses on important LLD concepts such as classes, interfaces, responsibilities, relationships, extensibility, and edge-case handling.
+>>> Each problem focuses on important LLD concepts such as classes, interfaces, responsibilities, relationships, extensibility, and edge-case handling.
 
 ## Core User Flow
 
-```text
 Choose a Problem
        ↓
 Read Requirements
@@ -61,7 +63,7 @@ Try Another Problem
 | Extensibility | 3 |
 | Code Quality | 2 |
 | Edge Cases | 1 |
-| **Total** | **10** |
+| Total | 10 |
 
 The evaluation provides:
 
@@ -69,14 +71,13 @@ The evaluation provides:
 - Areas for improvement
 - Practical suggestions
 
-The AI generates scores for the individual categories, while the application calculates the final score out of 10 from those category scores.
-
-This makes the evaluation structured and consistent across different submissions.
+>>> The AI generates scores for the individual categories, while the application calculates the final score out of 10 from those category scores.
 
 ## Technology Stack
 
 - Frontend: Next.js, React, TypeScript
 - Styling: Tailwind CSS
+- Code Editor: Monaco Editor
 - Backend Platform: Supabase
 - Database: PostgreSQL
 - AI Evaluation: Google Gemini API
@@ -86,12 +87,13 @@ This makes the evaluation structured and consistent across different submissions
 
 ## Architecture
 
->>> CodeLab follows a simple architecture focused on the core LLD practice workflow.
+CodeLab follows a simple architecture focused on the core LLD practice workflow.
+
 
                     CodeLab
                        │
                        ↓
-                Next.js Application
+              Next.js Application
                        │
              ┌─────────┴─────────┐
              ↓                   ↓
@@ -101,7 +103,7 @@ This makes the evaluation structured and consistent across different submissions
        Supabase API         AI Evaluation
              │
              ↓
-       PostgreSQL
+         PostgreSQL
              │
        ┌─────┴─────┐
        ↓           ↓
@@ -110,9 +112,11 @@ This makes the evaluation structured and consistent across different submissions
                     ↓
                  Feedback
 
-                 ## Database Design
 
->>> The main database entities are:
+## Database Design
+
+The main database entities are:
+
 
 problems
    │
@@ -124,23 +128,31 @@ attempts
    ↓
 feedback
 
-- **Problems:** Stores LLD problems.
-- **Attempts:** Stores user submissions.
-- **Feedback:** Stores evaluation results.
+- Problems: Stores LLD problems.
+- Attempts: Stores user submissions.
+- Feedback: Stores evaluation results.
 
 ## AI Evaluation
 
 Google Gemini evaluates submitted solutions and provides scores, strengths, weaknesses, and suggestions.
 
+The AI generates scores for the individual categories, while the application calculates the final score out of 10.
+
+## About
+
+The About page provides information about CodeLab, its purpose, workflow, and author.
+
 ## Project Structure
 
 CodeLab/
 ├── app/
+│   ├── about/
 │   ├── api/
 │   ├── feedback/
 │   ├── history/
 │   └── problems/
 ├── components/
+│   └── Navbar.tsx
 ├── lib/
 │   ├── evaluation/
 │   └── supabase/
@@ -148,6 +160,5 @@ CodeLab/
 ├── package.json
 └── README.md
 
-
-## Author
-Ashish Mahwar
+Author:
+Ashish Mahur
