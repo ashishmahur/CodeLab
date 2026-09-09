@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { evaluateSolution } from "@/lib/evaluation/evaluator";
 
 const problems = {
   "parking-lot": {
@@ -219,10 +218,9 @@ Explain your design decisions below...`,
 
 export default function ProblemPage() {
   const params = useParams();
-    const router = useRouter();
-  
-  const id = params.id as keyof typeof problems;
+  const router = useRouter();
 
+  const id = params.id as keyof typeof problems;
   const problem = problems[id];
 
   const [solution, setSolution] = useState("");
@@ -287,10 +285,31 @@ export default function ProblemPage() {
         throw attemptError;
       }
 
-      // Step 3: Evaluate the solution
-      const evaluation = evaluateSolution(id, solution);
+      // Step 3: Send the solution to the AI evaluator
+      const evaluationResponse = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemTitle: problem.title,
+          problemDescription: problem.description,
+          requirements: problem.requirements,
+          solution: solution.trim(),
+        }),
+      });
 
-      // Step 4: Save feedback
+      const evaluationData = await evaluationResponse.json();
+
+      if (!evaluationResponse.ok || !evaluationData.success) {
+        throw new Error(
+          evaluationData.error || "AI evaluation failed."
+        );
+      }
+
+      const evaluation = evaluationData.evaluation;
+
+      // Step 4: Save AI feedback
       const { error: feedbackError } = await supabase
         .from("feedback")
         .insert({
@@ -305,13 +324,14 @@ export default function ProblemPage() {
           suggestions: evaluation.suggestions,
         });
 
-   if (feedbackError) {
-  throw feedbackError;
-}
+      if (feedbackError) {
+        throw feedbackError;
+      }
 
-           router.push(`/feedback/${attemptData.id}`);
+      // Step 5: Show success and open feedback
+      setSubmitted(true);
 
-
+      router.push(`/feedback/${attemptData.id}`);
     } catch (error) {
       console.error("Submission error:", error);
 
@@ -356,9 +376,12 @@ export default function ProblemPage() {
         </div>
 
         <div className="mt-6 grid h-[calc(100vh-220px)] min-h-[520px] gap-5 lg:grid-cols-2">
+          {/* Problem */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
-              <h2 className="text-lg font-semibold text-white">Problem</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Problem
+              </h2>
 
               <p className="mt-1 text-sm text-zinc-500">
                 Understand the requirements before designing your solution.
@@ -418,6 +441,7 @@ export default function ProblemPage() {
             </div>
           </section>
 
+          {/* Solution */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
               <h2 className="text-lg font-semibold text-white">

@@ -107,7 +107,7 @@ export default function FeedbackPage() {
     {
       label: "Design",
       score: feedback.design_score,
-      max: 5,
+      max: 4,
     },
     {
       label: "Extensibility",
@@ -122,7 +122,7 @@ export default function FeedbackPage() {
     {
       label: "Edge Cases",
       score: feedback.edge_case_score,
-      max: 2,
+      max: 1,
     },
   ];
 
