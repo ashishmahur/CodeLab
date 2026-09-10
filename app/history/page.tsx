@@ -10,19 +10,34 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
+type ProblemRelation =
+  | {
+      title: string;
+      slug: string;
+    }
+  | {
+      title: string;
+      slug: string;
+    }[]
+  | null;
+
+type FeedbackRelation =
+  | {
+      overall_score: number;
+    }
+  | {
+      overall_score: number;
+    }[]
+  | null;
+
 type Attempt = {
   id: string;
   solution: string;
   language: string;
   status: string;
   created_at: string;
-  problems: {
-    title: string;
-    slug: string;
-  }[] | null;
-  feedback: {
-    overall_score: number;
-  }[] | null;
+  problems: ProblemRelation;
+  feedback: FeedbackRelation;
 };
 
 export default function HistoryPage() {
@@ -85,6 +100,30 @@ export default function HistoryPage() {
     });
   }
 
+  function getProblem(problem: ProblemRelation) {
+    if (!problem) {
+      return null;
+    }
+
+    if (Array.isArray(problem)) {
+      return problem[0] || null;
+    }
+
+    return problem;
+  }
+
+  function getFeedback(feedback: FeedbackRelation) {
+    if (!feedback) {
+      return null;
+    }
+
+    if (Array.isArray(feedback)) {
+      return feedback[0] || null;
+    }
+
+    return feedback;
+  }
+
   if (isLoading) {
     return (
       <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
@@ -125,7 +164,6 @@ export default function HistoryPage() {
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
       <div className="mx-auto max-w-[1200px] px-6 py-8 lg:px-10">
 
-        {/* Header */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-400">
             History
@@ -140,7 +178,6 @@ export default function HistoryPage() {
           </p>
         </div>
 
-        {/* Empty State */}
         {attempts.length === 0 ? (
           <section className="mt-8 rounded-xl border border-zinc-600 bg-zinc-800 px-6 py-12 text-center">
             <FileText className="mx-auto h-10 w-10 text-zinc-500" />
@@ -162,80 +199,81 @@ export default function HistoryPage() {
             </Link>
           </section>
         ) : (
-          /* Attempts */
           <div className="mt-8 space-y-4">
-            {attempts.map((attempt) => (
-              <article
-                key={attempt.id}
-                className="rounded-xl border border-zinc-600 bg-zinc-800 p-5 transition duration-200 hover:border-orange-400"
-              >
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            {attempts.map((attempt) => {
+              const problem = getProblem(attempt.problems);
+              const feedback = getFeedback(attempt.feedback);
 
-                  {/* Attempt Details */}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-3">
-                      <h2 className="truncate text-lg font-semibold text-white">
-                        {attempt.problems?.[0]?.title || "Unknown Problem"}
-                      </h2>
+              return (
+                <article
+                  key={attempt.id}
+                  className="rounded-xl border border-zinc-600 bg-zinc-800 p-5 transition duration-200 hover:border-orange-400"
+                >
+                  <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-                      <span className="rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1 text-xs capitalize text-zinc-400">
-                        {attempt.status}
-                      </span>
-                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3">
+                        <h2 className="truncate text-lg font-semibold text-white">
+                          {problem?.title || "Unknown Problem"}
+                        </h2>
 
-                    <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                      <span className="flex items-center gap-1.5">
-                        <Clock3 size={14} />
-                        {formatDate(attempt.created_at)}
-                      </span>
-
-                      <span>
-                        Language: {attempt.language}
-                      </span>
-                    </div>
-
-                    <p className="mt-3 line-clamp-2 text-sm leading-5 text-zinc-400">
-                      {attempt.solution}
-                    </p>
-                  </div>
-
-                  {/* Score + Action */}
-                  <div className="flex shrink-0 items-center justify-between gap-5 sm:flex-col sm:items-end">
-
-                    <div>
-                      <p className="text-xs text-zinc-500">
-                        Score
-                      </p>
-
-                      <p className="mt-1 text-2xl font-bold text-orange-400">
-                        {attempt.feedback?.[0]?.overall_score ?? "—"}
-                        <span className="ml-1 text-sm font-normal text-zinc-500">
-                          / 10
+                        <span className="rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1 text-xs capitalize text-zinc-400">
+                          {attempt.status}
                         </span>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="flex items-center gap-1.5">
+                          <Clock3 size={14} />
+                          {formatDate(attempt.created_at)}
+                        </span>
+
+                        <span>
+                          Language: {attempt.language}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-sm leading-5 text-zinc-400">
+                        {attempt.solution}
                       </p>
                     </div>
 
-                    {attempt.feedback?.length ? (
-                      <Link
-                        href={`/feedback/${attempt.id}`}
-                        className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
-                      >
-                        View Feedback
-                        <ArrowRight size={15} />
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-zinc-500">
-                        Feedback unavailable
-                      </span>
-                    )}
+                    <div className="flex shrink-0 items-center justify-between gap-5 sm:flex-col sm:items-end">
+
+                      <div>
+                        <p className="text-xs text-zinc-500">
+                          Score
+                        </p>
+
+                        <p className="mt-1 text-2xl font-bold text-orange-400">
+                          {feedback?.overall_score ?? "—"}
+                          <span className="ml-1 text-sm font-normal text-zinc-500">
+                            / 10
+                          </span>
+                        </p>
+                      </div>
+
+                      {feedback ? (
+                        <Link
+                          href={`/feedback/${attempt.id}`}
+                          className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
+                        >
+                          View Feedback
+                          <ArrowRight size={15} />
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-zinc-500">
+                          Feedback unavailable
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
 
-        {/* Back */}
         <div className="mt-6">
           <Link
             href="/problems"
