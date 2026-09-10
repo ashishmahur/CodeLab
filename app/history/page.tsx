@@ -19,10 +19,10 @@ type Attempt = {
   problems: {
     title: string;
     slug: string;
-  } | null;
+  }[] | null;
   feedback: {
     overall_score: number;
-  } | null;
+  }[] | null;
 };
 
 export default function HistoryPage() {
@@ -175,7 +175,7 @@ export default function HistoryPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
                       <h2 className="truncate text-lg font-semibold text-white">
-                        {attempt.problems?.title || "Unknown Problem"}
+                        {attempt.problems?.[0]?.title || "Unknown Problem"}
                       </h2>
 
                       <span className="rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1 text-xs capitalize text-zinc-400">
@@ -208,14 +208,14 @@ export default function HistoryPage() {
                       </p>
 
                       <p className="mt-1 text-2xl font-bold text-orange-400">
-                        {attempt.feedback?.overall_score ?? "—"}
+                        {attempt.feedback?.[0]?.overall_score ?? "—"}
                         <span className="ml-1 text-sm font-normal text-zinc-500">
                           / 10
                         </span>
                       </p>
                     </div>
 
-                    {attempt.feedback ? (
+                    {attempt.feedback?.length ? (
                       <Link
                         href={`/feedback/${attempt.id}`}
                         className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
@@ -245,7 +245,7 @@ export default function HistoryPage() {
             Back to Problems
           </Link>
         </div>
-        
+
       </div>
     </main>
   );
