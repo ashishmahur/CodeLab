@@ -26,7 +26,7 @@ export default function Home() {
         <div className="relative mx-auto max-w-[1500px] px-8 py-14 lg:px-14 lg:py-16">
           <div className="max-w-5xl">
             <div className="flex items-center gap-3">
-              <span className="h-px w-8 bg-orange-500" />
+            
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
                 Low Level Design Practice
               </p>
