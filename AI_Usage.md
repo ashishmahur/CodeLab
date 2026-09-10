@@ -7,7 +7,6 @@ It helped me with implementation, understanding errors, improving the UI, integr
 ## 1. AI Evaluation
 
 I used Gemini to evaluate the LLD solutions submitted by users.
-
 The feedback is based on four areas:
 
 - Design: 0–4
@@ -16,7 +15,6 @@ The feedback is based on four areas:
 - Edge Cases: 0–1
 
 The application calculates the final score out of 10.
-
 I chose this approach because LLD problems can have multiple valid solutions. Instead of checking for one exact answer, the AI can review the overall design and give useful feedback.
 
 ## 2. Structured Feedback
