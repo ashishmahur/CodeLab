@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Lightbulb,
   ArrowRight,
+  RotateCcw,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -31,6 +32,7 @@ export default function FeedbackPage() {
   const attemptId = params.attemptId as string;
 
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [problemSlug, setProblemSlug] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -39,7 +41,8 @@ export default function FeedbackPage() {
       try {
         const supabase = createClient();
 
-        const { data, error: feedbackError } = await supabase
+        // Load feedback
+        const { data: feedbackData, error: feedbackError } = await supabase
           .from("feedback")
           .select("*")
           .eq("attempt_id", attemptId)
@@ -49,7 +52,29 @@ export default function FeedbackPage() {
           throw feedbackError;
         }
 
-        setFeedback(data);
+        setFeedback(feedbackData);
+
+        // Load problem associated with this attempt
+        const { data: attemptData, error: attemptError } = await supabase
+          .from("attempts")
+          .select(`
+            problem_id,
+            problems (
+              slug
+            )
+          `)
+          .eq("id", attemptId)
+          .single();
+
+        if (attemptError) {
+          throw attemptError;
+        }
+
+        const problem = Array.isArray(attemptData.problems)
+          ? attemptData.problems[0]
+          : attemptData.problems;
+
+        setProblemSlug(problem?.slug || null);
       } catch (error) {
         console.error("Feedback loading error:", error);
 
@@ -291,14 +316,28 @@ export default function FeedbackPage() {
 
         {/* Actions */}
         <div className="mt-5 flex flex-wrap gap-3">
+
+          {/* Try Again */}
+          {problemSlug && (
+            <Link
+              href={`/problems/${problemSlug}`}
+              className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-1 hover:bg-orange-600"
+            >
+              <RotateCcw size={16} />
+              Try Again
+            </Link>
+          )}
+
+          {/* Try Another Problem */}
           <Link
             href="/problems"
-            className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-1 hover:bg-orange-600"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
           >
             Try Another Problem
             <ArrowRight size={16} />
           </Link>
 
+          {/* History */}
           <Link
             href="/history"
             className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
