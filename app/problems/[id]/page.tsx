@@ -217,6 +217,14 @@ Explain your design decisions below...`,
   },
 };
 
+const languages = [
+  { label: "Python", value: "python" },
+  { label: "C", value: "c" },
+  { label: "C++", value: "cpp" },
+  { label: "Java", value: "java" },
+  { label: "TypeScript", value: "typescript" },
+];
+
 export default function ProblemPage() {
   const params = useParams();
   const router = useRouter();
@@ -225,6 +233,7 @@ export default function ProblemPage() {
   const problem = problems[id];
 
   const [solution, setSolution] = useState("");
+  const [language, setLanguage] = useState("python");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -276,7 +285,7 @@ export default function ProblemPage() {
         .insert({
           problem_id: problemData.id,
           solution: solution.trim(),
-          language: "text",
+          language: language,
           status: "submitted",
         })
         .select("id")
@@ -445,20 +454,51 @@ export default function ProblemPage() {
           {/* Solution */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
-              <h2 className="text-lg font-semibold text-white">
-                Solution Here
-              </h2>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Solution Here
+                  </h2>
 
-              <p className="mt-1 text-sm text-zinc-500">
-                Write your classes, interfaces, relationships, and design
-                decisions.
-              </p>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Write your classes, interfaces, relationships, and design
+                    decisions.
+                  </p>
+                </div>
+
+                {/* Language Selector */}
+                <div className="shrink-0">
+                  <label
+                    htmlFor="language"
+                    className="mb-1.5 block text-xs font-medium text-zinc-500"
+                  >
+                    Language
+                  </label>
+
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(event) => {
+                      setLanguage(event.target.value);
+                      setSubmitted(false);
+                      setError("");
+                    }}
+                    className="rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 outline-none transition focus:border-orange-400"
+                  >
+                    {languages.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overflow-hidden bg-zinc-950">
               <Editor
                 height="100%"
-                language="typescript"
+                language={language}
                 theme="vs-dark"
                 value={solution}
                 onChange={(value) => {
