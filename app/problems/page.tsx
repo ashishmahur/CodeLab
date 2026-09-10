@@ -1,135 +1,565 @@
-import Link from "next/link";
-import {
-  ArrowRight,
-  Car,
-  Building2,
-  CupSoda,
-  Ticket,
-  CreditCard,
-} from "lucide-react";
+"use client";
 
-const problems = [
-  {
-    id: "parking-lot",
+import { useState } from "react";
+import Editor from "@monaco-editor/react";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+const problems = {
+  "parking-lot": {
     title: "Parking Lot",
     description:
       "Design a parking lot that supports different vehicle types and parking spots.",
     difficulty: "Medium",
-    topics: ["OOP", "SOLID", "Strategy"],
-    icon: Car,
+    requirements: [
+      "Support different types of vehicles.",
+      "Support different types of parking spots.",
+      "Assign a suitable parking spot to a vehicle.",
+      "Allow vehicles to leave the parking lot.",
+      "Track available and occupied parking spots.",
+      "Keep the design easy to extend.",
+    ],
+    submit: [
+      "Important classes and interfaces",
+      "Parking and vehicle behaviour",
+      "Relationships between classes",
+      "Important design decisions",
+    ],
+    example: `class ParkingLot {
+    private spots: ParkingSpot[];
+
+    park(vehicle: Vehicle) {
+        // ...
+    }
+
+    exit(vehicle: Vehicle) {
+        // ...
+    }
+}
+
+interface ParkingStrategy {
+    findSpot(vehicle: Vehicle): ParkingSpot;
+}
+
+Explain your design decisions below...`,
   },
-  {
-    id: "elevator-system",
+
+  "elevator-system": {
     title: "Elevator System",
     description:
-      "Design an elevator system that handles requests from multiple floors efficiently.",
+      "Design an elevator system that handles requests from different floors and manages elevator movement.",
     difficulty: "Medium",
-    topics: ["OOP", "State", "Scheduling"],
-    icon: Building2,
+    requirements: [
+      "Support multiple floors.",
+      "Support multiple elevators.",
+      "Accept requests from different floors.",
+      "Move elevators based on requests.",
+      "Handle elevator states.",
+      "Keep the system easy to extend.",
+    ],
+    submit: [
+      "Important classes and interfaces",
+      "Elevator request handling",
+      "Relationships between classes",
+      "Important design decisions",
+    ],
+    example: `class Elevator {
+    private currentFloor: number;
+
+    moveTo(floor: number) {
+        // ...
+    }
+
+    openDoor() {
+        // ...
+    }
+}
+
+interface SchedulingStrategy {
+    selectElevator(request: ElevatorRequest): Elevator;
+}
+
+Explain your design decisions below...`,
   },
-  {
-    id: "vending-machine",
+
+  "vending-machine": {
     title: "Vending Machine",
     description:
       "Design a vending machine that manages products, payments, and inventory.",
     difficulty: "Easy",
-    topics: ["OOP", "State", "Encapsulation"],
-    icon: CupSoda,
+    requirements: [
+      "Display available products.",
+      "Allow users to select a product.",
+      "Accept payments.",
+      "Return change when required.",
+      "Handle unavailable products.",
+      "Keep the system easy to extend.",
+    ],
+    submit: [
+      "Important classes and interfaces",
+      "Product and inventory management",
+      "Payment handling",
+      "Relationships between classes",
+      "Important design decisions",
+    ],
+    example: `class VendingMachine {
+    private inventory: Inventory;
+
+    selectProduct(productId: string) {
+        // ...
+    }
+
+    insertMoney(amount: number) {
+        // ...
+    }
+
+    dispenseProduct() {
+        // ...
+    }
+}
+
+interface PaymentStrategy {
+    processPayment(amount: number): boolean;
+}
+
+Explain your design decisions below...`,
   },
-  {
-    id: "movie-ticket-booking",
+
+  "movie-ticket-booking": {
     title: "Movie Ticket Booking",
     description:
       "Design a booking system for theatres, shows, seats, and reservations.",
     difficulty: "Medium",
-    topics: ["OOP", "Composition", "Booking"],
-    icon: Ticket,
+    requirements: [
+      "Support multiple theatres.",
+      "Support multiple movies and shows.",
+      "Allow users to view available seats.",
+      "Allow users to select and book seats.",
+      "Prevent double booking.",
+      "Keep the system easy to extend.",
+    ],
+    submit: [
+      "Important classes and interfaces",
+      "Movie, theatre, show and seat relationships",
+      "Booking behaviour",
+      "Handling seat availability",
+      "Important design decisions",
+    ],
+    example: `class Show {
+    private seats: Seat[];
+
+    getAvailableSeats(): Seat[] {
+        // ...
+    }
+
+    bookSeat(seatId: string) {
+        // ...
+    }
+}
+
+class Booking {
+    private show: Show;
+    private seats: Seat[];
+
+    confirm() {
+        // ...
+    }
+}
+
+Explain your design decisions below...`,
   },
-  {
-    id: "atm-system",
+
+  "atm-system": {
     title: "ATM System",
     description:
       "Design an ATM that manages authentication, transactions, and cash withdrawal.",
     difficulty: "Medium",
-    topics: ["OOP", "State", "Transactions"],
-    icon: CreditCard,
+    requirements: [
+      "Authenticate a user using a card and PIN.",
+      "Allow balance enquiry.",
+      "Allow cash withdrawal.",
+      "Allow cash deposit.",
+      "Handle insufficient balance and cash.",
+      "Keep the system easy to extend.",
+    ],
+    submit: [
+      "Important classes and interfaces",
+      "Authentication flow",
+      "Transaction handling",
+      "ATM state management",
+      "Relationships between classes",
+      "Important design decisions",
+    ],
+    example: `class ATM {
+    private state: ATMState;
+
+    insertCard(card: Card) {
+        // ...
+    }
+
+    enterPin(pin: string) {
+        // ...
+    }
+
+    withdraw(amount: number) {
+        // ...
+    }
+}
+
+interface ATMState {
+    insertCard(card: Card): void;
+    withdraw(amount: number): void;
+}
+
+Explain your design decisions below...`,
   },
+};
+
+const languages = [
+  { label: "Python", value: "python" },
+  { label: "C", value: "c" },
+  { label: "C++", value: "cpp" },
+  { label: "Java", value: "java" },
+  { label: "TypeScript", value: "typescript" },
 ];
 
-export default function ProblemsPage() {
+export default function ProblemPage() {
+  const params = useParams();
+  const router = useRouter();
+
+  const id = params.id as keyof typeof problems;
+  const problem = problems[id];
+
+  const [solution, setSolution] = useState("");
+  const [language, setLanguage] = useState("python");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!problem) {
+    return (
+      <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 px-8 py-16 text-zinc-100">
+        <div className="mx-auto max-w-[1500px]">
+          <h1 className="text-3xl font-bold">Problem not found</h1>
+
+          <Link
+            href="/problems"
+            className="mt-6 inline-flex items-center gap-2 text-orange-400 hover:text-orange-300"
+          >
+            <ArrowLeft size={18} />
+            Back to Problems
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  async function handleSubmit() {
+    if (!solution.trim()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitted(false);
+    setError("");
+
+    try {
+      const supabase = createClient();
+
+      // Step 1: Find the problem in Supabase
+      const { data: problemData, error: problemError } = await supabase
+        .from("problems")
+        .select("id")
+        .eq("slug", id)
+        .single();
+
+      if (problemError) {
+        throw problemError;
+      }
+
+      // Step 2: Save the attempt
+      const { data: attemptData, error: attemptError } = await supabase
+        .from("attempts")
+        .insert({
+          problem_id: problemData.id,
+          solution: solution.trim(),
+          language: language,
+          status: "submitted",
+        })
+        .select("id")
+        .single();
+
+      if (attemptError) {
+        throw attemptError;
+      }
+
+      // Step 3: Send the solution to the AI evaluator
+      const evaluationResponse = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemTitle: problem.title,
+          problemDescription: problem.description,
+          requirements: problem.requirements,
+          solution: solution.trim(),
+        }),
+      });
+
+      const evaluationData = await evaluationResponse.json();
+
+      if (!evaluationResponse.ok || !evaluationData.success) {
+        throw new Error(
+          evaluationData.error || "AI evaluation failed."
+        );
+      }
+
+      const evaluation = evaluationData.evaluation;
+
+      // Step 4: Save AI feedback
+      const { error: feedbackError } = await supabase
+        .from("feedback")
+        .insert({
+          attempt_id: attemptData.id,
+          overall_score: evaluation.overallScore,
+          design_score: evaluation.designScore,
+          extensibility_score: evaluation.extensibilityScore,
+          code_quality_score: evaluation.codeQualityScore,
+          edge_case_score: evaluation.edgeCaseScore,
+          strengths: evaluation.strengths,
+          weaknesses: evaluation.weaknesses,
+          suggestions: evaluation.suggestions,
+        });
+
+      if (feedbackError) {
+        throw feedbackError;
+      }
+
+      // Step 5: Show success and open feedback
+      setSubmitted(true);
+
+      router.push(`/feedback/${attemptData.id}`);
+    } catch (error) {
+      console.error("Submission error:", error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : JSON.stringify(error);
+
+      setError(`Submission failed: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
-      <div className="mx-auto max-w-[1500px] px-8 py-6 lg:px-14">
-        {/* Heading */}
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
-            Practice Problems
-          </p>
+      <div className="mx-auto max-w-[1600px] px-6 py-6 lg:px-10">
+        <Link
+          href="/problems"
+          className="inline-flex items-center gap-2 text-sm text-zinc-400 transition duration-200 hover:text-orange-400"
+        >
+          <ArrowLeft size={16} />
+          Back to Problems
+        </Link>
 
-          <h1 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
-            Choose an LLD problem
+        <div className="mt-5">
+          <div className="flex items-center gap-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
+              Practice
+            </p>
+
+            <span className="rounded-md border border-zinc-600 bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
+              {problem.difficulty}
+            </span>
+          </div>
+
+          <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            {problem.title}
           </h1>
 
-          <p className="mt-5 text-lg leading-8 text-zinc-400">
-            Pick a problem, design your solution, and get feedback on your
-            approach.
+          <p className="mt-2 max-w-4xl text-base text-zinc-400">
+            {problem.description}
           </p>
-        </div>  
+        </div>
 
-        {/* Problem Cards */}
-        <div className="mt-8 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-          {problems.map((problem) => {
-            const Icon = problem.icon;
+        <div className="mt-6 grid h-[calc(100vh-220px)] min-h-[520px] gap-5 lg:grid-cols-2">
+          {/* Problem */}
+          <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
+            <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
+              <h2 className="text-lg font-semibold text-white">
+                Problem
+              </h2>
 
-            return (
-              <div
-                key={problem.id}
-                className="group flex flex-col rounded-xl border border-zinc-600 bg-zinc-800 p-6 transition duration-200 hover:-translate-y-2 hover:border-orange-400"
-              >
-                {/* Icon */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-900 transition duration-200 group-hover:border-orange-400">
-                  <Icon className="h-6 w-6 text-orange-400 transition duration-200 group-hover:scale-110" />
+              <p className="mt-1 text-sm text-zinc-500">
+                Understand the requirements before writing your solution.
+              </p>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto p-5">
+              <div>
+                <h3 className="text-base font-semibold text-white">
+                  Requirements
+                </h3>
+
+                <ul className="mt-3 space-y-2.5">
+                  {problem.requirements.map((requirement) => (
+                    <li
+                      key={requirement}
+                      className="flex gap-3 text-sm leading-6 text-zinc-400"
+                    >
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" />
+                      {requirement}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-7 border-t border-zinc-700 pt-6">
+                <h3 className="text-base font-semibold text-white">
+                  What you should submit
+                </h3>
+
+                <ul className="mt-3 space-y-2.5">
+                  {problem.submit.map((item) => (
+                    <li
+                      key={item}
+                      className="flex gap-3 text-sm leading-6 text-zinc-400"
+                    >
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-7 border-t border-zinc-700 pt-6">
+                <h3 className="text-base font-semibold text-white">
+                  Think about
+                </h3>
+
+                <ul className="mt-3 space-y-2.5 text-sm leading-6 text-zinc-400">
+                  <li>• What classes do you need?</li>
+                  <li>• What are their responsibilities?</li>
+                  <li>• How should the classes interact?</li>
+                  <li>• Which interfaces are useful?</li>
+                  <li>• How can the design be extended?</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          {/* Solution */}
+          <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
+            <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Solution Here
+                  </h2>
+
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Write your classes, interfaces, relationships, and design
+                    decisions.
+                  </p>
                 </div>
 
-                {/* Title */}
-                <h2 className="mt-5 text-xl font-semibold text-white">
-                  {problem.title}
-                </h2>
+                {/* Language Selector */}
+                <div className="shrink-0">
+                  <label
+                    htmlFor="language"
+                    className="mb-1.5 block text-xs font-medium text-zinc-500"
+                  >
+                    Language
+                  </label>
 
-                {/* Difficulty */}
-                <span className="mt-3 w-fit rounded-md border border-zinc-600 bg-zinc-900 px-3 py-1 text-xs text-zinc-300">
-                  {problem.difficulty}
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(event) => {
+                      setLanguage(event.target.value);
+                      setSubmitted(false);
+                      setError("");
+                    }}
+                    className="rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 outline-none transition focus:border-orange-400"
+                  >
+                    {languages.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-hidden bg-zinc-950">
+              <Editor
+                height="100%"
+                language={language}
+                theme="vs-dark"
+                value={solution}
+                onChange={(value) => {
+                  setSolution(value ?? "");
+                  setSubmitted(false);
+                  setError("");
+                }}
+                options={{
+                  minimap: {
+                    enabled: false,
+                  },
+                  fontSize: 14,
+                  lineHeight: 22,
+                  wordWrap: "on",
+                  padding: {
+                    top: 16,
+                    bottom: 16,
+                  },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                }}
+              />
+            </div>
+
+            <div className="shrink-0 border-t border-zinc-600 px-5 py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-zinc-500">
+                  {solution.length} characters
                 </span>
 
-                {/* Description */}
-                <p className="mt-4 flex-1 text-sm leading-6 text-zinc-400">
-                  {problem.description}
-                </p>
-
-                {/* Topics */}
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {problem.topics.map((topic) => (
-                    <span
-                      key={topic}
-                      className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-400"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-
-                {/* View Problem */}
-                <Link
-                  href={`/problems/${problem.id}`}
-                  className="mt-6 flex items-center justify-between rounded-lg border border-zinc-500 px-4 py-3 text-sm font-medium text-zinc-200 transition duration-200 hover:border-orange-400 hover:bg-zinc-900 hover:text-orange-400"
+                <button
+                  onClick={handleSubmit}
+                  disabled={!solution.trim() || isSubmitting}
+                  className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-1 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
                 >
-                  View Problem
-
-                  <ArrowRight className="h-4 w-4 transition duration-200 group-hover:translate-x-1" />
-                </Link>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Evaluating...
+                    </>
+                  ) : (
+                    "Submit Solution"
+                  )}
+                </button>
               </div>
-            );
-          })}
+
+              {submitted && (
+                <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-700 bg-green-950/40 px-3 py-2 text-sm text-green-400">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Solution submitted and evaluated successfully!
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-3 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </div>
     </main>
