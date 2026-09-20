@@ -32,14 +32,14 @@ export default function DashboardUserMenu({ name }: Props) {
     };
   }, []);
 
-  async function handleSignOut() {
-    const supabase = createClient();
+ async function handleSignOut() {
+  const supabase = createClient();
 
-    await supabase.auth.signOut();
+  await supabase.auth.signOut();
 
-    router.push("/auth/login");
-    router.refresh();
-  }
+  router.push("/auth/login?message=Hey%20Developer%20%F0%9F%91%8B%20See%20you%20soon.%20Keep%20building.");
+  router.refresh();
+}
 
   const initial = name.charAt(0).toUpperCase();
 

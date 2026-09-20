@@ -13,7 +13,11 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
@@ -21,6 +25,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [message, setMessage] = useState("");
+
+  useState(() => {
+    searchParams.then((params) => {
+      if (params.message) {
+        setMessage(params.message);
+      }
+    });
+  });
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,7 +59,6 @@ export default function LoginPage() {
   return (
     <>
       <main className="relative min-h-screen overflow-hidden bg-[#090909] text-zinc-100">
-        {/* Ambient background */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -left-40 -top-40 h-[420px] w-[420px] rounded-full border border-orange-500/20" />
 
@@ -69,7 +82,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Back to Home */}
         <Link
           href="/"
           className="group absolute left-6 top-6 z-50 flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950/80 px-4 py-2 text-sm font-medium text-zinc-400 backdrop-blur-md transition-all duration-300 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-400 md:left-10 md:top-8"
@@ -83,10 +95,8 @@ export default function LoginPage() {
 
         <div className="relative mx-auto flex min-h-screen max-w-[1500px] items-center px-6 py-10 lg:px-12">
           <div className="grid w-full items-center gap-10 lg:grid-cols-[1fr_0.9fr] xl:gap-20">
-            {/* LEFT CONTENT */}
             <section className="relative flex min-h-[620px] flex-col justify-center px-2 sm:px-8 lg:px-10">
               <div className="animate-login-content">
-                {/* Logo */}
                 <Link
                   href="/"
                   className="mb-12 inline-flex w-fit items-center gap-2 text-xl font-semibold tracking-tight"
@@ -120,14 +130,11 @@ export default function LoginPage() {
               </div>
             </section>
 
-            {/* RIGHT LOGIN */}
             <section className="flex items-center justify-center px-2 sm:px-8 lg:px-0">
               <div className="login-card relative w-full max-w-[520px]">
-                {/* Outer glow */}
                 <div className="pointer-events-none absolute -inset-3 rounded-[30px] bg-orange-500/10 blur-2xl" />
 
                 <div className="login-card-inner relative rounded-[28px] border border-orange-500/80 bg-[#111214]/95 p-7 shadow-[0_0_25px_rgba(249,115,22,0.18),0_0_80px_rgba(249,115,22,0.08)] backdrop-blur-xl sm:p-10">
-                  {/* Decorative corner */}
                   <div className="absolute right-7 top-7 text-orange-500/30">
                     <Code2 className="h-7 w-7" />
                   </div>
@@ -148,8 +155,15 @@ export default function LoginPage() {
                     </p>
                   </div>
 
+                  {message && (
+                    <div className="mb-6 rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-center">
+                      <p className="text-sm font-medium text-orange-400">
+                        {message}
+                      </p>
+                    </div>
+                  )}
+
                   <form onSubmit={handleLogin} className="space-y-5">
-                    {/* Email */}
                     <div>
                       <label
                         htmlFor="email"
@@ -174,7 +188,6 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    {/* Password */}
                     <div>
                       <div className="mb-2 flex items-center justify-between">
                         <label
@@ -232,14 +245,12 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    {/* Error */}
                     {error && (
                       <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm leading-5 text-red-400">
                         {error}
                       </div>
                     )}
 
-                    {/* Sign in */}
                     <button
                       type="submit"
                       disabled={loading}
@@ -253,14 +264,12 @@ export default function LoginPage() {
                     </button>
                   </form>
 
-                  {/* Divider */}
                   <div className="my-7 flex items-center gap-4">
                     <div className="h-px flex-1 bg-zinc-800" />
                     <span className="text-xs text-zinc-600">OR</span>
                     <div className="h-px flex-1 bg-zinc-800" />
                   </div>
 
-                  {/* Signup */}
                   <p className="text-center text-sm text-zinc-500">
                     Don&apos;t have an account?{" "}
                     <Link

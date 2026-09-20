@@ -8,12 +8,13 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Auth pages have their own premium layout.
-      if (
-        pathname.startsWith("/auth") ||
-        pathname.startsWith("/dashboard")
-      ) {
-        return null;
-      }
+    if (
+  pathname.startsWith("/auth") ||
+  pathname.startsWith("/dashboard") ||
+  pathname.startsWith("/profile")
+) {
+  return null;
+}
 
   return (
     <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
