@@ -1,42 +1,27 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
 
-  const code = searchParams.get("code");
+  const tokenHash = searchParams.get("token_hash");
+  const type = searchParams.get("type") as EmailOtpType | null;
 
-  if (code) {
-    const cookieStore = await cookies();
+  if (tokenHash && type) {
+    const supabase = await createClient();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // Cookie updates may fail in some server contexts.
-            }
-          },
-        },
-      }
-    );
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.verifyOtp({
+      type,
+      token_hash: tokenHash,
+    });
 
     if (!error) {
       return NextResponse.redirect(`${origin}/dashboard`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth/login?error=verification_failed`);
+  return NextResponse.redirect(
+    `${origin}/auth/login?error=verification_failed`
+  );
 }
