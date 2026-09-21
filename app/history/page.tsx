@@ -177,7 +177,7 @@ export default function HistoryPage() {
         <div className="absolute right-[8%] top-[58%] h-1 w-1 rounded-full bg-orange-500 shadow-[0_0_18px_6px_rgba(249,115,22,0.25)]" />
       </div>
 
-      <DashboardSidebar showBottomSection={false} />
+      <DashboardSidebar />
 
       <div className="relative z-10 lg:ml-[244px]">
         <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-zinc-800/70 bg-[#080909]/85 px-5 backdrop-blur-xl sm:px-8 xl:px-10">

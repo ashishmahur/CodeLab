@@ -8,10 +8,12 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Auth pages have their own premium layout.
-    if (
+if (
   pathname.startsWith("/auth") ||
   pathname.startsWith("/dashboard") ||
-  pathname.startsWith("/profile")
+  pathname.startsWith("/profile") ||
+  pathname === "/history" ||
+  pathname.startsWith("/feedback/")
 ) {
   return null;
 }
