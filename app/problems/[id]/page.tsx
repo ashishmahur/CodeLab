@@ -102,10 +102,20 @@ export default function ProblemPage() {
     try {
       const supabase = createClient();
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
       // Step 1: Save the attempt
       const { data: attemptData, error: attemptError } = await supabase
         .from("attempts")
         .insert({
+          user_id: user.id,
           problem_id: problem.id,
           solution: solution.trim(),
           language: language,
@@ -220,8 +230,6 @@ export default function ProblemPage() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
       <div className="mx-auto max-w-[1600px] px-6 py-6 lg:px-10">
-
-        {/* Back */}
         <Link
           href="/problems"
           className="inline-flex items-center gap-2 text-sm text-zinc-400 transition duration-200 hover:text-orange-400"
@@ -229,8 +237,6 @@ export default function ProblemPage() {
           <ArrowLeft size={16} />
           Back to Problems
         </Link>
-
-        {/* Header */}
         <div className="mt-5">
           <div className="flex items-center gap-3">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
@@ -258,11 +264,7 @@ export default function ProblemPage() {
             {problem.description}
           </p>
         </div>
-
-        {/* Main Content */}
         <div className="mt-6 grid h-[calc(100vh-220px)] min-h-[520px] gap-5 lg:grid-cols-2">
-
-          {/* Problem */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
 
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
@@ -276,8 +278,6 @@ export default function ProblemPage() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-5">
-
-              {/* Requirements */}
               <div>
                 <h3 className="text-base font-semibold text-white">
                   Requirements
@@ -298,8 +298,6 @@ export default function ProblemPage() {
                   )}
                 </ul>
               </div>
-
-              {/* Submit Points */}
               <div className="mt-7 border-t border-zinc-700 pt-6">
                 <h3 className="text-base font-semibold text-white">
                   What you should submit
@@ -320,8 +318,6 @@ export default function ProblemPage() {
                   )}
                 </ul>
               </div>
-
-              {/* Think About */}
               <div className="mt-7 border-t border-zinc-700 pt-6">
                 <h3 className="text-base font-semibold text-white">
                   Think about
@@ -337,11 +333,7 @@ export default function ProblemPage() {
               </div>
             </div>
           </section>
-
-          {/* Solution */}
           <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
-
-            {/* Editor Header */}
             <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
               <div className="flex items-center justify-between gap-4">
 
@@ -355,8 +347,6 @@ export default function ProblemPage() {
                     decisions.
                   </p>
                 </div>
-
-                {/* Language Selector */}
                 <div className="shrink-0">
                   <label
                     htmlFor="language"
@@ -387,8 +377,6 @@ export default function ProblemPage() {
                 </div>
               </div>
             </div>
-
-            {/* Monaco Editor */}
             <div className="min-h-0 flex-1 overflow-hidden bg-zinc-950">
               <Editor
                 height="100%"
@@ -417,8 +405,6 @@ export default function ProblemPage() {
                 }}
               />
             </div>
-
-            {/* Submit */}
             <div className="shrink-0 border-t border-zinc-600 px-5 py-3">
 
               <div className="flex items-center justify-between">
@@ -441,16 +427,12 @@ export default function ProblemPage() {
                   )}
                 </button>
               </div>
-
-              {/* Success */}
               {submitted && (
                 <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-700 bg-green-950/40 px-3 py-2 text-sm text-green-400">
                   <CheckCircle2 className="h-4 w-4" />
                   Solution submitted and evaluated successfully!
                 </div>
               )}
-
-              {/* Error */}
               {error && (
                 <div className="mt-3 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-400">
                   {error}

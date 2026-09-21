@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EditProfileModal from "@/components/EditProfileModal";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -26,10 +27,25 @@ export default async function ProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("full_name, bio, role")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null };
+
   const fullName =
+    profile?.full_name ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
     "Developer";
+
+  const bio =
+    profile?.bio ||
+    "I'm a developer who loves solving problems, building projects and learning new technologies. I'm currently practicing low level design, data structures and full stack development to become a better engineer every day.";
+
+  const role = profile?.role || "Developer";
 
   const email = user?.email || "No email available";
   const initial = fullName.charAt(0).toUpperCase();
@@ -185,7 +201,7 @@ export default async function ProfilePage() {
                 <p className="text-sm font-medium text-zinc-200">
                   {fullName}
                 </p>
-                <p className="text-xs text-zinc-500">Developer</p>
+                <p className="text-xs text-zinc-500">{role}</p>
               </div>
 
               <ChevronRight className="hidden h-4 w-4 rotate-90 text-zinc-600 sm:block" />
@@ -217,10 +233,14 @@ export default async function ProfilePage() {
                 </p>
               </div>
 
-              <button className="hidden h-11 items-center gap-2 rounded-xl border border-orange-500/50 bg-orange-500/[0.06] px-5 text-sm font-medium text-zinc-200 transition hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-400 sm:flex">
-                <Pencil className="h-4 w-4" />
-                Edit Profile
-              </button>
+              {user && (
+                <EditProfileModal
+                  userId={user.id}
+                  initialName={fullName}
+                  initialBio={bio}
+                  variant="profile"
+                />
+              )}
             </div>
 
             <div className="mb-8">
@@ -252,7 +272,7 @@ export default async function ProfilePage() {
                       <div>
                         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/[0.06] px-3 py-1 text-xs font-medium text-orange-400">
                           <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-                          Developer
+                          {role}
                         </div>
 
                         <div className="space-y-3">
@@ -297,17 +317,18 @@ export default async function ProfilePage() {
                     </h2>
                   </div>
 
-                  <button className="flex items-center gap-2 rounded-lg border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition hover:border-orange-500/40 hover:text-orange-400">
-                    <Pencil className="h-3.5 w-3.5" />
-                    Edit About
-                  </button>
+                  {user && (
+                    <EditProfileModal
+                      userId={user.id}
+                      initialName={fullName}
+                      initialBio={bio}
+                      variant="about"
+                    />
+                  )}
                 </div>
 
                 <p className="max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-                  I&apos;m a developer who loves solving problems, building
-                  projects and learning new technologies. I&apos;m currently
-                  practicing low level design, data structures and full stack
-                  development to become a better engineer every day.
+                  {bio}
                 </p>
               </section>
 

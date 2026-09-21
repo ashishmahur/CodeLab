@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import DashboardUserMenu from "@/components/DashboardUserMenu";
+import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   Activity,
   ArrowRight,
@@ -36,12 +37,112 @@ export default async function DashboardPage() {
     redirect("/auth/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const fullName =
+    profile?.full_name ||
     user.user_metadata?.full_name ||
     user.email?.split("@")[0] ||
     "Developer";
 
   const firstName = fullName.split(" ")[0];
+
+  const { data: attempts } = await supabase
+    .from("attempts")
+    .select(`
+      id,
+      problem_id,
+      status,
+      created_at,
+      problems (
+        title,
+        difficulty
+      ),
+      feedback (
+        overall_score
+      )
+    `)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const attemptRows = attempts ?? [];
+
+  const solvedProblemIds = new Set(
+    attemptRows
+      .filter((attempt) => attempt.status === "submitted")
+      .map((attempt) => attempt.problem_id)
+  );
+
+  const totalAttempts = attemptRows.length;
+
+  const scoredAttempts = attemptRows
+    .map((attempt) => {
+      const feedback = Array.isArray(attempt.feedback)
+        ? attempt.feedback[0]
+        : attempt.feedback;
+
+      return feedback?.overall_score ?? null;
+    })
+    .filter((score): score is number => typeof score === "number");
+
+  const averageAiScore = scoredAttempts.length
+    ? (
+        scoredAttempts.reduce((sum, score) => sum + score, 0) /
+        scoredAttempts.length
+      ).toFixed(1)
+    : null;
+
+  const difficultyCounts = {
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+  };
+
+  for (const attempt of attemptRows) {
+    if (attempt.status !== "submitted") continue;
+
+    const problem = Array.isArray(attempt.problems)
+      ? attempt.problems[0]
+      : attempt.problems;
+
+  if (problem?.difficulty === "Easy") {
+  difficultyCounts.Easy++;
+} else if (problem?.difficulty === "Medium") {
+  difficultyCounts.Medium++;
+} else if (problem?.difficulty === "Hard") {
+  difficultyCounts.Hard++;
+}
+  }
+
+  const activityDates = new Set(
+    attemptRows.map((attempt) =>
+      new Date(attempt.created_at).toISOString().slice(0, 10)
+    )
+  );
+
+  let currentStreak = 0;
+  const today = new Date();
+
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const dateKey = date.toISOString().slice(0, 10);
+
+    if (activityDates.has(dateKey)) {
+      currentStreak++;
+    } else if (i === 0) {
+      continue;
+    } else {
+      break;
+    }
+  }
+
+  const recentAttempts = attemptRows.slice(0, 5);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#080909] text-zinc-100">
@@ -71,163 +172,7 @@ export default async function DashboardPage() {
         <div className="absolute right-[8%] top-[58%] h-1 w-1 rounded-full bg-orange-500 shadow-[0_0_18px_6px_rgba(249,115,22,0.25)]" />
       </div>
 
-      
-
-      <aside
-        className="fixed left-0 top-0 z-40 hidden h-screen w-[244px] overflow-hidden border-r border-zinc-800/80 bg-[#0b0d0e] lg:block"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 78% 14%, rgba(249,115,22,0.10), transparent 18%),
-            radial-gradient(circle at 70% 38%, rgba(249,115,22,0.055), transparent 22%),
-            radial-gradient(circle at 45% 72%, rgba(249,115,22,0.035), transparent 28%),
-            linear-gradient(rgba(249,115,22,0.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(249,115,22,0.045) 1px, transparent 1px)
-          `,
-          backgroundSize:
-            "auto, auto, auto, 42px 42px, 42px 42px",
-        }}
-      >
-        
-        <div className="pointer-events-none absolute inset-0">
-          
-          <div className="absolute left-0 top-[82px] h-px w-full bg-orange-500/[0.10]" />
-
-          <div className="absolute left-0 top-[190px] h-px w-full bg-orange-500/[0.07]" />
-
-          <div className="absolute left-0 top-[310px] h-px w-full bg-orange-500/[0.06]" />
-
-          <div className="absolute left-0 top-[445px] h-px w-full bg-orange-500/[0.07]" />
-
-          
-          <div className="absolute left-[48px] top-0 h-full w-px bg-orange-500/[0.045]" />
-
-          <div className="absolute left-[108px] top-0 h-full w-px bg-orange-500/[0.05]" />
-
-          <div className="absolute left-[176px] top-0 h-full w-px bg-orange-500/[0.045]" />
-
-          
-          <span className="absolute right-[35px] top-[84px] h-1 w-1 rounded-full bg-orange-400 shadow-[0_0_14px_5px_rgba(249,115,22,0.45)]" />
-
-          <span className="absolute right-[76px] top-[190px] h-1 w-1 rounded-full bg-orange-400 shadow-[0_0_13px_5px_rgba(249,115,22,0.35)]" />
-
-          <span className="absolute right-[31px] top-[310px] h-1 w-1 rounded-full bg-orange-400 shadow-[0_0_15px_5px_rgba(249,115,22,0.4)]" />
-
-          <span className="absolute left-[108px] top-[445px] h-1 w-1 rounded-full bg-orange-400 shadow-[0_0_14px_5px_rgba(249,115,22,0.3)]" />
-        </div>
-
-        <div className="relative z-10 flex h-full flex-col">
-          
-          <div className="flex h-[72px] shrink-0 items-center border-b border-zinc-800/70 px-7">
-            <Link
-              href="/dashboard"
-              className="group flex items-center gap-2.5"
-            >
-              <Code2 className="h-7 w-7 text-orange-500 transition-transform duration-300 group-hover:rotate-6" />
-
-              <div>
-                <div className="text-xl font-bold tracking-tight">
-                  Code<span className="text-orange-500">Lab</span>
-                </div>
-
-                <p className="text-[9px] tracking-[0.18em] text-zinc-600">
-                  BUILD. PRACTICE. GROW.
-                </p>
-              </div>
-            </Link>
-          </div>
-
-          
-          <nav className="flex-1 px-3 pt-1.2">
-            <NavItem
-              href="/dashboard"
-              icon={<Home size={19} />}
-              label="Dashboard"
-              active
-            />
-
-            <NavItem
-              href="/problems"
-              icon={<Library size={19} />}
-              label="Problems"
-            />
-
-            <NavItem
-              href="/ai-review"
-              icon={<BrainCircuit size={19} />}
-              label="AI Review"
-            />
-
-            <NavItem
-              href="/contests"
-              icon={<Trophy size={19} />}
-              label="Contests"
-              badge="New"
-            />
-
-            <NavItem
-              href="/learning"
-              icon={<Map size={19} />}
-              label="Learning Paths"
-            />
-
-            <NavItem
-              href="/community"
-              icon={<Users size={19} />}
-              label="Community"
-            />
-
-            <NavItem
-              href="/profile"
-              icon={<User size={19} />}
-              label="Profile"
-            />
-
-            <NavItem
-              href="/settings"
-              icon={<Settings size={19} />}
-              label="Settings"
-            />
-          </nav>
-
-          
-          <div className="shrink-0 px-5 pb-3">
-            <div className="rounded-xl border border-orange-500/40 bg-orange-500/[0.045] p-3.5">
-              <div className="flex items-center gap-2">
-                <Sparkles
-                  size={17}
-                  className="shrink-0 text-orange-500"
-                />
-
-                <h3 className="text-sm font-semibold text-orange-400">
-                  Upgrade to Pro
-                </h3>
-              </div>
-
-              <p className="mt-2 text-[11px] leading-4 text-zinc-600">
-                Unlock advanced AI insights, custom tests, and more.
-              </p>
-
-              <button className="mt-2.5 flex h-8.5 w-full items-center justify-center rounded-lg bg-orange-500 text-xs font-bold text-black transition hover:bg-orange-400">
-                Upgrade Now
-              </button>
-            </div>
-
-            <div className="mt-4 px-2">
-              <p className="text-[11px] leading-4 text-zinc-600">
-                “A little progress every day adds up to big results.”
-              </p>
-
-              <div className="mt-3 h-px w-8 bg-orange-500" />
-            </div>
-
-            <p className="mt-4 px-2 text-[9px] tracking-[0.2em] text-zinc-700">
-              CODELAB V2.0
-            </p>
-          </div>
-        </div>
-      </aside>
-
-      
+     <DashboardSidebar />
 
       <div className="relative z-10 lg:ml-[244px]">
         
@@ -333,33 +278,33 @@ export default async function DashboardPage() {
             <StatCard
               icon={<CheckCircle2 size={23} />}
               iconClass="bg-emerald-500/15 text-emerald-400"
-              value="0"
+              value={String(solvedProblemIds.size)}
               label="Problems Solved"
-              sub="Start solving"
+              sub={solvedProblemIds.size ? "Keep going" : "Start solving"}
             />
 
             <StatCard
               icon={<BarChart3 size={23} />}
               iconClass="bg-blue-500/15 text-blue-400"
-              value="0"
+              value={String(totalAttempts)}
               label="Total Attempts"
-              sub="No attempts yet"
+              sub={totalAttempts ? "Practice sessions" : "No attempts yet"}
             />
 
             <StatCard
               icon={<Sparkles size={23} />}
               iconClass="bg-purple-500/15 text-purple-400"
-              value="—"
+              value={averageAiScore ? `${averageAiScore}/10` : "—"}
               label="Average AI Score"
-              sub="Complete a review"
+              sub={averageAiScore ? "Across reviewed attempts" : "Complete a review"}
             />
 
             <StatCard
               icon={<Flame size={23} />}
               iconClass="bg-orange-500/15 text-orange-400"
-              value="0"
+              value={String(currentStreak)}
               label="Current Streak"
-              sub="Start your streak"
+              sub={currentStreak ? "Days active" : "Start your streak"}
             />
           </section>
 
@@ -408,7 +353,9 @@ export default async function DashboardPage() {
               <div className="mt-6 flex items-center justify-center">
                 <div className="relative flex h-36 w-36 items-center justify-center rounded-full bg-[conic-gradient(#27272a_0deg_360deg)]">
                   <div className="flex h-[108px] w-[108px] flex-col items-center justify-center rounded-full bg-[#0e1112]">
-                    <span className="text-2xl font-bold">0</span>
+                    <span className="text-2xl font-bold">
+                      {solvedProblemIds.size}
+                    </span>
 
                     <span className="text-xs text-zinc-600">
                       Solved
@@ -421,19 +368,19 @@ export default async function DashboardPage() {
                 <DifficultyRow
                   dot="bg-emerald-400"
                   label="Easy"
-                  value="0"
+                  value={String(difficultyCounts.Easy)}
                 />
 
                 <DifficultyRow
                   dot="bg-orange-400"
                   label="Medium"
-                  value="0"
+                  value={String(difficultyCounts.Medium)}
                 />
 
                 <DifficultyRow
                   dot="bg-purple-400"
                   label="Hard"
-                  value="0"
+                  value={String(difficultyCounts.Hard)}
                 />
               </div>
             </div>
@@ -481,24 +428,103 @@ export default async function DashboardPage() {
               title="Recent Attempts"
               icon={<ArrowRight size={18} />}
             >
-              <EmptyPanel
-                text="No attempts yet"
-                link="/problems"
-                linkText="Solve your first problem"
-                large
-              />
+              {recentAttempts.length === 0 ? (
+                <EmptyPanel
+                  text="No attempts yet"
+                  link="/problems"
+                  linkText="Solve your first problem"
+                  large
+                />
+              ) : (
+                <div className="space-y-2">
+                  {recentAttempts.map((attempt) => {
+                    const problem = Array.isArray(attempt.problems)
+                      ? attempt.problems[0]
+                      : attempt.problems;
+
+                    const feedback = Array.isArray(attempt.feedback)
+                      ? attempt.feedback[0]
+                      : attempt.feedback;
+
+                    return (
+                      <div
+                        key={attempt.id}
+                        className="flex items-center justify-between gap-4 rounded-xl border border-zinc-800/80 bg-zinc-950/30 p-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-zinc-200">
+                            {problem?.title || "Problem"}
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-600">
+                            {problem?.difficulty || "Practice"} ·{" "}
+                            {new Date(attempt.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          <p className="text-sm font-semibold text-orange-400">
+                            {typeof feedback?.overall_score === "number"
+                              ? `${feedback.overall_score}/10`
+                              : "Submitted"}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </DashboardPanel>
 
             <DashboardPanel
               title="Recent Activity"
               icon={<Activity size={18} />}
             >
-              <EmptyPanel
-                text="Your activity will appear here."
-                link="/problems"
-                linkText="Start solving"
-                large
-              />
+              {recentAttempts.length === 0 ? (
+                <EmptyPanel
+                  text="Your activity will appear here."
+                  link="/problems"
+                  linkText="Start solving"
+                  large
+                />
+              ) : (
+                <div className="space-y-3">
+                  {recentAttempts.slice(0, 4).map((attempt) => {
+                    const problem = Array.isArray(attempt.problems)
+                      ? attempt.problems[0]
+                      : attempt.problems;
+
+                    return (
+                      <div key={attempt.id} className="flex gap-3">
+                        <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.7)]" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-zinc-400">
+                            Submitted{" "}
+                            <span className="font-medium text-zinc-200">
+                              {problem?.title || "a problem"}
+                            </span>
+                          </p>
+                          <p className="mt-1 text-xs text-zinc-700">
+                            {new Date(attempt.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </DashboardPanel>
           </section>
         </div>
