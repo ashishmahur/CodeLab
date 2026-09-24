@@ -76,7 +76,7 @@ const difficultyStyles: Record<string, string> = {
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [attemptedIds, setAttemptedIds] = useState<Set<string>>(new Set());
-  const [userName, setUserName] = useState("Developer");
+  const [userName, setUserName] = useState("");
 
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("All");
@@ -285,7 +285,7 @@ export default function ProblemsPage() {
               <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-orange-500" />
             </button>
 
-            <DashboardUserMenu name={userName} />
+            <DashboardUserMenu name={userName || "Loading..."} />
           </div>
         </header>
 
