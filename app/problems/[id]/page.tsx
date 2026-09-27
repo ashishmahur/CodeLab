@@ -3,9 +3,22 @@
 import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import DashboardSidebar from "@/components/DashboardSidebar";
+import DashboardUserMenu from "@/components/DashboardUserMenu";
 import { createClient } from "@/lib/supabase/client";
+
+type Example = {
+  input: string;
+  output: string;
+};
 
 type Problem = {
   id: string;
@@ -13,13 +26,15 @@ type Problem = {
   title: string;
   description: string;
   difficulty: string;
-  requirements: string[];
-  submit_points: string[];
+  topic: string | null;
+  companies: string[];
+  tags: string[];
+  examples: Example[];
+  constraints: string[];
 };
 
 const languages = [
   { label: "Python", value: "python" },
-  { label: "C", value: "c" },
   { label: "C++", value: "cpp" },
   { label: "Java", value: "java" },
   { label: "TypeScript", value: "typescript" },
@@ -34,22 +49,38 @@ export default function ProblemPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [solution, setSolution] = useState("");
   const [language, setLanguage] = useState("python");
+  const [userName, setUserName] = useState("");
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  // Load problem from Supabase
   useEffect(() => {
     async function loadProblem() {
       try {
         const supabase = createClient();
 
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push("/auth/login");
+          return;
+        }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+
+        setUserName(profile?.full_name || "Developer");
+
         const { data, error: problemError } = await supabase
           .from("problems")
           .select(
-            "id, slug, title, description, difficulty, requirements, submit_points"
+            "id, slug, title, description, difficulty, topic, companies, tags, examples, constraints"
           )
           .eq("slug", slug)
           .single();
@@ -58,16 +89,15 @@ export default function ProblemPage() {
           throw problemError;
         }
 
-        setProblem(data);
+        setProblem(data as Problem);
       } catch (error) {
         console.error("Problem loading error:", error);
 
-        const errorMessage =
+        setError(
           error instanceof Error
             ? error.message
-            : "Unable to load problem.";
-
-        setError(errorMessage);
+            : "Unable to load problem."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -76,7 +106,7 @@ export default function ProblemPage() {
     if (slug) {
       loadProblem();
     }
-  }, [slug]);
+  }, [slug, router]);
 
   async function handleSubmit() {
     if (!problem) {
@@ -89,14 +119,11 @@ export default function ProblemPage() {
     }
 
     if (solution.trim().length < 30) {
-      setError(
-        "Please provide a more detailed solution before submitting."
-      );
+      setError("Please provide a more detailed solution before submitting.");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitted(false);
     setError("");
 
     try {
@@ -111,14 +138,13 @@ export default function ProblemPage() {
         return;
       }
 
-      // Step 1: Save the attempt
       const { data: attemptData, error: attemptError } = await supabase
         .from("attempts")
         .insert({
           user_id: user.id,
           problem_id: problem.id,
           solution: solution.trim(),
-          language: language,
+          language,
           status: "submitted",
         })
         .select("id")
@@ -128,7 +154,6 @@ export default function ProblemPage() {
         throw attemptError;
       }
 
-      // Step 2: Send solution to AI evaluator
       const evaluationResponse = await fetch("/api/evaluate", {
         method: "POST",
         headers: {
@@ -137,7 +162,10 @@ export default function ProblemPage() {
         body: JSON.stringify({
           problemTitle: problem.title,
           problemDescription: problem.description,
-          requirements: problem.requirements || [],
+          requirements: [
+            ...(problem.constraints || []),
+            ...(problem.tags || []),
+          ],
           solution: solution.trim(),
         }),
       });
@@ -152,7 +180,6 @@ export default function ProblemPage() {
 
       const evaluation = evaluationData.evaluation;
 
-      // Step 3: Save feedback
       const { error: feedbackError } = await supabase
         .from("feedback")
         .insert({
@@ -171,9 +198,6 @@ export default function ProblemPage() {
         throw feedbackError;
       }
 
-      // Step 4: Open feedback page
-      setSubmitted(true);
-
       router.push(`/feedback/${attemptData.id}`);
     } catch (error) {
       console.error("Submission error:", error);
@@ -181,7 +205,7 @@ export default function ProblemPage() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : JSON.stringify(error);
+          : "Something went wrong.";
 
       setError(`Submission failed: ${errorMessage}`);
     } finally {
@@ -189,259 +213,335 @@ export default function ProblemPage() {
     }
   }
 
-  // Loading
   if (isLoading) {
     return (
-      <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
-        <div className="mx-auto max-w-[1500px] px-8 py-16 lg:px-14">
-          <p className="text-sm text-zinc-400">
+      <div className="min-h-screen bg-[#090909] text-zinc-100">
+        <DashboardSidebar />
+
+        <main className="ml-[244px] flex min-h-screen items-center justify-center">
+          <div className="flex items-center gap-3 text-sm text-zinc-500">
+            <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
             Loading problem...
-          </p>
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     );
   }
 
-  // Problem not found
   if (!problem) {
     return (
-      <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 px-8 py-16 text-zinc-100">
-        <div className="mx-auto max-w-[1500px]">
-          <h1 className="text-3xl font-bold text-white">
-            Problem not found
-          </h1>
+      <div className="min-h-screen bg-[#090909] text-zinc-100">
+        <DashboardSidebar />
 
-          <p className="mt-2 text-sm text-zinc-400">
-            {error || "This problem does not exist."}
-          </p>
+        <main className="ml-[244px] min-h-screen px-8 py-12">
+          <div className="mx-auto max-w-4xl">
+            <h1 className="text-3xl font-bold">Problem not found</h1>
 
-          <Link
-            href="/problems"
-            className="mt-6 inline-flex items-center gap-2 text-orange-400 transition hover:text-orange-300"
-          >
-            <ArrowLeft size={18} />
-            Back to Problems
-          </Link>
-        </div>
-      </main>
+            <p className="mt-3 text-sm text-zinc-500">
+              {error || "This problem does not exist."}
+            </p>
+
+            <Link
+              href="/problems"
+              className="mt-6 inline-flex items-center gap-2 text-sm text-orange-400 transition hover:text-orange-300"
+            >
+              <ArrowLeft size={16} />
+              Back to Problems
+            </Link>
+          </div>
+        </main>
+      </div>
     );
   }
 
+  const difficultyClass =
+    problem.difficulty === "Hard"
+      ? "border-red-500/20 bg-red-500/10 text-red-400"
+      : problem.difficulty === "Medium"
+        ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
+        : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
-      <div className="mx-auto max-w-[1600px] px-6 py-6 lg:px-10">
-        <Link
-          href="/problems"
-          className="inline-flex items-center gap-2 text-sm text-zinc-400 transition duration-200 hover:text-orange-400"
-        >
-          <ArrowLeft size={16} />
-          Back to Problems
-        </Link>
-        <div className="mt-5">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
+    <div className="min-h-screen bg-[#090909] text-zinc-100">
+      <DashboardSidebar />
+
+      <main className="ml-[244px] min-h-screen">
+        <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-zinc-800/80 bg-[#090909]/90 px-8 backdrop-blur-xl">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-orange-400">
               Practice
             </p>
-
-            <span
-              className={`rounded-md border px-3 py-1 text-xs ${
-                problem.difficulty === "Hard"
-                  ? "border-red-900 bg-red-950/30 text-red-400"
-                  : problem.difficulty === "Medium"
-                  ? "border-yellow-900 bg-yellow-950/20 text-yellow-400"
-                  : "border-green-900 bg-green-950/20 text-green-400"
-              }`}
-            >
-              {problem.difficulty}
-            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Solve and improve your DSA skills
+            </p>
           </div>
 
-          <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
-            {problem.title}
-          </h1>
+          <div className="flex items-center gap-5">
+            <button className="relative text-zinc-500 transition hover:text-zinc-200">
+              <Bell size={19} />
+              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-orange-500" />
+            </button>
 
-          <p className="mt-2 max-w-4xl text-base text-zinc-400">
-            {problem.description}
-          </p>
-        </div>
-        <div className="mt-6 grid h-[calc(100vh-220px)] min-h-[520px] gap-5 lg:grid-cols-2">
-          <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
+            <DashboardUserMenu
+              name={userName || "Loading..."}
+            />
+          </div>
+        </header>
 
-            <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
-              <h2 className="text-lg font-semibold text-white">
-                Problem
-              </h2>
+        <div
+          className="relative min-h-[calc(100vh-72px)] overflow-hidden px-8 py-7"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+            backgroundSize: "42px 42px",
+          }}
+        >
+          <div className="pointer-events-none absolute right-20 top-20 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl" />
 
-              <p className="mt-1 text-sm text-zinc-500">
-                Understand the requirements before writing your solution.
+          <div className="relative mx-auto max-w-[1600px]">
+            <Link
+              href="/problems"
+              className="inline-flex items-center gap-2 text-sm text-zinc-500 transition hover:text-orange-400"
+            >
+              <ArrowLeft size={16} />
+              Back to Problems
+            </Link>
+
+            <div className="mt-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <span
+                  className={`rounded-md border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${difficultyClass}`}
+                >
+                  {problem.difficulty}
+                </span>
+
+                {problem.topic && (
+                  <span className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-1 text-[11px] text-zinc-500">
+                    {problem.topic}
+                  </span>
+                )}
+
+                {problem.companies?.map((company) => (
+                  <span
+                    key={company}
+                    className="rounded-md border border-orange-500/15 bg-orange-500/5 px-3 py-1 text-[11px] text-orange-400"
+                  >
+                    {company}
+                  </span>
+                ))}
+              </div>
+
+              <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                {problem.title}
+              </h1>
+
+              <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-500">
+                {problem.description}
               </p>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-5">
-              <div>
-                <h3 className="text-base font-semibold text-white">
-                  Requirements
-                </h3>
-
-                <ul className="mt-3 space-y-2.5">
-                  {problem.requirements?.map(
-                    (requirement, index) => (
-                      <li
-                        key={`${requirement}-${index}`}
-                        className="flex gap-3 text-sm leading-6 text-zinc-400"
-                      >
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" />
-
-                        {requirement}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-              <div className="mt-7 border-t border-zinc-700 pt-6">
-                <h3 className="text-base font-semibold text-white">
-                  What you should submit
-                </h3>
-
-                <ul className="mt-3 space-y-2.5">
-                  {problem.submit_points?.map(
-                    (item, index) => (
-                      <li
-                        key={`${item}-${index}`}
-                        className="flex gap-3 text-sm leading-6 text-zinc-400"
-                      >
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" />
-
-                        {item}
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
-              <div className="mt-7 border-t border-zinc-700 pt-6">
-                <h3 className="text-base font-semibold text-white">
-                  Think about
-                </h3>
-
-                <ul className="mt-3 space-y-2.5 text-sm leading-6 text-zinc-400">
-                  <li>• What classes do you need?</li>
-                  <li>• What are their responsibilities?</li>
-                  <li>• How should the classes interact?</li>
-                  <li>• Which interfaces are useful?</li>
-                  <li>• How can the design be extended?</li>
-                </ul>
-              </div>
-            </div>
-          </section>
-          <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-600 bg-zinc-800">
-            <div className="shrink-0 border-b border-zinc-600 px-5 py-4">
-              <div className="flex items-center justify-between gap-4">
-
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Solution Here
+            <div className="mt-7 grid min-h-[650px] gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+              <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80">
+                <div className="shrink-0 border-b border-zinc-800 px-6 py-5">
+                  <h2 className="text-lg font-semibold">
+                    Problem
                   </h2>
 
-                  <p className="mt-1 text-sm text-zinc-500">
-                    Write your classes, interfaces, relationships, and design
-                    decisions.
+                  <p className="mt-1 text-xs text-zinc-600">
+                    Understand the problem before writing your solution.
                   </p>
                 </div>
-                <div className="shrink-0">
-                  <label
-                    htmlFor="language"
-                    className="mb-1.5 block text-xs font-medium text-zinc-500"
-                  >
-                    Language
-                  </label>
 
-                  <select
-                    id="language"
-                    value={language}
-                    onChange={(event) => {
-                      setLanguage(event.target.value);
-                      setSubmitted(false);
+                <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+                  {problem.examples?.length > 0 && (
+                    <section>
+                      <h3 className="text-sm font-semibold text-zinc-200">
+                        Examples
+                      </h3>
+
+                      <div className="mt-4 space-y-4">
+                        {problem.examples.map((example, index) => (
+                          <div
+                            key={index}
+                            className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60"
+                          >
+                            <div className="border-b border-zinc-800 px-4 py-3">
+                              <span className="text-xs font-medium text-zinc-500">
+                                Example {index + 1}
+                              </span>
+                            </div>
+
+                            <div className="space-y-4 p-4">
+                              <div>
+                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                                  Input
+                                </p>
+
+                                <pre className="overflow-x-auto rounded-lg bg-zinc-950 p-3 text-xs leading-6 text-zinc-300">
+                                  {example.input}
+                                </pre>
+                              </div>
+
+                              <div>
+                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                                  Output
+                                </p>
+
+                                <pre className="overflow-x-auto rounded-lg bg-zinc-950 p-3 text-xs leading-6 text-orange-300">
+                                  {example.output}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {problem.constraints?.length > 0 && (
+                    <section className="mt-8 border-t border-zinc-800 pt-7">
+                      <h3 className="text-sm font-semibold text-zinc-200">
+                        Constraints
+                      </h3>
+
+                      <ul className="mt-4 space-y-3">
+                        {problem.constraints.map(
+                          (constraint, index) => (
+                            <li
+                              key={`${constraint}-${index}`}
+                              className="flex gap-3 text-sm leading-6 text-zinc-500"
+                            >
+                              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
+                              {constraint}
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </section>
+                  )}
+
+                  {problem.tags?.length > 0 && (
+                    <section className="mt-8 border-t border-zinc-800 pt-7">
+                      <h3 className="text-sm font-semibold text-zinc-200">
+                        Topics
+                      </h3>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {problem.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-500"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
+              </section>
+
+              <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80">
+                <div className="shrink-0 border-b border-zinc-800 px-5 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-semibold">
+                        Solution
+                      </h2>
+
+                      <p className="mt-1 text-xs text-zinc-600">
+                        Write your solution and submit it for AI review.
+                      </p>
+                    </div>
+
+                    <div className="relative shrink-0">
+                      <select
+                        value={language}
+                        onChange={(event) => {
+                          setLanguage(event.target.value);
+                          setError("");
+                        }}
+                        className="h-10 appearance-none rounded-lg border border-zinc-800 bg-zinc-900 pl-3 pr-9 text-sm text-zinc-300 outline-none transition focus:border-orange-500/40"
+                      >
+                        {languages.map((item) => (
+                          <option
+                            key={item.value}
+                            value={item.value}
+                          >
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      <ChevronDown
+                        size={14}
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-hidden bg-[#050505]">
+                  <Editor
+                    height="100%"
+                    language={language}
+                    theme="vs-dark"
+                    value={solution}
+                    onChange={(value) => {
+                      setSolution(value ?? "");
                       setError("");
                     }}
-                    className="rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 outline-none transition focus:border-orange-400"
-                  >
-                    {languages.map((item) => (
-                      <option
-                        key={item.value}
-                        value={item.value}
-                      >
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={{
+                      minimap: {
+                        enabled: false,
+                      },
+                      fontSize: 14,
+                      lineHeight: 22,
+                      wordWrap: "on",
+                      padding: {
+                        top: 18,
+                        bottom: 18,
+                      },
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                    }}
+                  />
                 </div>
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden bg-zinc-950">
-              <Editor
-                height="100%"
-                language={language}
-                theme="vs-dark"
-                value={solution}
-                onChange={(value) => {
-                  setSolution(value ?? "");
-                  setSubmitted(false);
-                  setError("");
-                }}
-                options={{
-                  minimap: {
-                    enabled: false,
-                  },
-                  fontSize: 14,
-                  lineHeight: 22,
-                  wordWrap: "on",
-                  padding: {
-                    top: 16,
-                    bottom: 16,
-                  },
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  tabSize: 2,
-                }}
-              />
-            </div>
-            <div className="shrink-0 border-t border-zinc-600 px-5 py-3">
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-500">
-                  {solution.length} characters
-                </span>
+                <div className="shrink-0 border-t border-zinc-800 px-5 py-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-zinc-600">
+                      {solution.length} characters
+                    </span>
 
-                <button
-                  onClick={handleSubmit}
-                  disabled={!solution.trim() || isSubmitting}
-                  className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-1 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Evaluating...
-                    </>
-                  ) : (
-                    "Submit Solution"
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!solution.trim() || isSubmitting}
+                      className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Evaluating...
+                        </>
+                      ) : (
+                        "Submit Solution"
+                      )}
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5 text-sm text-red-400">
+                      {error}
+                    </div>
                   )}
-                </button>
-              </div>
-              {submitted && (
-                <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-700 bg-green-950/40 px-3 py-2 text-sm text-green-400">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Solution submitted and evaluated successfully!
                 </div>
-              )}
-              {error && (
-                <div className="mt-3 rounded-lg border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-400">
-                  {error}
-                </div>
-              )}
+              </section>
             </div>
-          </section>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

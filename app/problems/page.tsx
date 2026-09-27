@@ -662,36 +662,74 @@ function FilterSelect({
   options: string[];
   icon?: React.ReactNode;
 }) {
-  return (
-    <div className="relative min-w-[170px]">
-      {icon ? (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600">
-          {icon}
-        </span>
-      ) : null}
+  const [open, setOpen] = useState(false);
 
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`h-11 w-full appearance-none rounded-xl border border-zinc-800 bg-zinc-900/70 pr-9 text-sm text-zinc-400 outline-none transition focus:border-orange-500/40 ${
-          icon ? "pl-9" : "pl-4"
+  useEffect(() => {
+    function handleClickOutside() {
+      setOpen(false);
+    }
+
+    if (open) {
+      document.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <div
+      className="relative min-w-[170px]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className={`flex h-11 w-full items-center justify-between rounded-xl border bg-[#0d0e0f] pr-3 text-sm outline-none transition ${
+          open
+            ? "border-orange-500/50 text-zinc-200"
+            : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
         }`}
       >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+        <span className="flex min-w-0 items-center gap-2">
+          {icon && <span className="text-zinc-600">{icon}</span>}
 
-      <ChevronDown
-        size={15}
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600"
-      />
+          <span className="truncate">{value}</span>
+        </span>
+
+        <ChevronDown
+          size={15}
+          className={`shrink-0 text-zinc-600 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-64 overflow-y-auto rounded-xl border border-zinc-800 bg-[#0d0e0f] p-1 shadow-xl">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => {
+                onChange(option);
+                setOpen(false);
+              }}
+              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                value === option
+                  ? "bg-orange-500/10 text-orange-400"
+                  : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
 function Tag({
   children,
   orange = false,
