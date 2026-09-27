@@ -6,9 +6,10 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Bell,
-  CheckCircle2,
   ChevronDown,
+  Code2,
   Loader2,
+  X,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -53,6 +54,7 @@ export default function ProblemPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -181,19 +183,19 @@ export default function ProblemPage() {
       const evaluation = evaluationData.evaluation;
 
       const { error: feedbackError } = await supabase
-  .from("feedback")
-  .insert({
-    attempt_id: attemptData.id,
-    overall_score: evaluation.overallScore,
-    correctness_score: evaluation.correctnessScore,
-    approach_score: evaluation.approachScore,
-    time_complexity_score: evaluation.timeComplexityScore,
-    space_complexity_score: evaluation.spaceComplexityScore,
-    code_quality_score: evaluation.codeQualityScore,
-    strengths: evaluation.strengths,
-    weaknesses: evaluation.weaknesses,
-    suggestions: evaluation.suggestions,
-  });
+        .from("feedback")
+        .insert({
+          attempt_id: attemptData.id,
+          overall_score: evaluation.overallScore,
+          correctness_score: evaluation.correctnessScore,
+          approach_score: evaluation.approachScore,
+          time_complexity_score: evaluation.timeComplexityScore,
+          space_complexity_score: evaluation.spaceComplexityScore,
+          code_quality_score: evaluation.codeQualityScore,
+          strengths: evaluation.strengths,
+          weaknesses: evaluation.weaknesses,
+          suggestions: evaluation.suggestions,
+        });
 
       if (feedbackError) {
         throw feedbackError;
@@ -217,9 +219,7 @@ export default function ProblemPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#090909] text-zinc-100">
-        <DashboardSidebar />
-
-        <main className="ml-[244px] flex min-h-screen items-center justify-center">
+        <main className="flex min-h-screen items-center justify-center">
           <div className="flex items-center gap-3 text-sm text-zinc-500">
             <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
             Loading problem...
@@ -232,9 +232,7 @@ export default function ProblemPage() {
   if (!problem) {
     return (
       <div className="min-h-screen bg-[#090909] text-zinc-100">
-        <DashboardSidebar />
-
-        <main className="ml-[244px] min-h-screen px-8 py-12">
+        <main className="min-h-screen px-8 py-12">
           <div className="mx-auto max-w-4xl">
             <h1 className="text-3xl font-bold">Problem not found</h1>
 
@@ -264,14 +262,46 @@ export default function ProblemPage() {
 
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100">
-      <DashboardSidebar />
+      {isSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[80] bg-black/40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
 
-      <main className="ml-[244px] min-h-screen">
+          <div className="relative z-[90]">
+            <DashboardSidebar />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed left-[244px] top-1/2 z-[100] -translate-y-1/2 rounded-r-lg border border-zinc-800 bg-[#0d0e0f] p-2 text-zinc-500 shadow-xl transition hover:border-orange-500/40 hover:text-orange-400"
+            aria-label="Close sidebar"
+          >
+            <X size={17} />
+          </button>
+        </>
+      )}
+
+      {!isSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed left-0 top-1/2 z-[100] -translate-y-1/2 rounded-r-xl border border-l-0 border-orange-500/30 bg-[#0d0e0f] px-3 py-4 text-orange-500 shadow-[0_0_25px_rgba(249,115,22,0.08)] transition-all duration-200 hover:border-orange-500/60 hover:bg-[#111213] hover:text-orange-400"
+          aria-label="Open sidebar"
+        >
+          <Code2 size={21} strokeWidth={2.5} />
+        </button>
+      )}
+
+      <main className="min-h-screen">
         <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-zinc-800/80 bg-[#090909]/90 px-8 backdrop-blur-xl">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-orange-400">
               Practice
             </p>
+
             <p className="mt-1 text-sm text-zinc-500">
               Solve and improve your DSA skills
             </p>
@@ -283,9 +313,7 @@ export default function ProblemPage() {
               <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-orange-500" />
             </button>
 
-            <DashboardUserMenu
-              name={userName || "Loading..."}
-            />
+            <DashboardUserMenu name={userName || "Loading..."} />
           </div>
         </header>
 
