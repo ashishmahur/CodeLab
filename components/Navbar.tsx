@@ -12,6 +12,7 @@ if (
   pathname.startsWith("/auth") ||
   pathname.startsWith("/dashboard") ||
   pathname.startsWith("/profile") ||
+  pathname.startsWith("/problems") ||
   pathname === "/history" ||
   pathname.startsWith("/feedback/")
 ) {

@@ -24,10 +24,11 @@ type Feedback = {
   id: string;
   attempt_id: string;
   overall_score: number;
-  design_score: number;
-  extensibility_score: number;
+  correctness_score: number;
+  approach_score: number;
+  time_complexity_score: number;
+  space_complexity_score: number;
   code_quality_score: number;
-  edge_case_score: number;
   strengths: string[];
   weaknesses: string[];
   suggestions: string[];
@@ -221,28 +222,33 @@ export default function FeedbackPage() {
     );
   }
 
-  const scoreItems = [
-    {
-      label: "Design",
-      score: feedback.design_score,
-      max: 4,
-    },
-    {
-      label: "Extensibility",
-      score: feedback.extensibility_score,
-      max: 3,
-    },
-    {
-      label: "Code Quality",
-      score: feedback.code_quality_score,
-      max: 2,
-    },
-    {
-      label: "Edge Cases",
-      score: feedback.edge_case_score,
-      max: 1,
-    },
-  ];
+ const scoreItems = [
+  {
+    label: "Correctness",
+    score: feedback.correctness_score,
+    max: 4,
+  },
+  {
+    label: "Approach",
+    score: feedback.approach_score,
+    max: 2,
+  },
+  {
+    label: "Time Complexity",
+    score: feedback.time_complexity_score,
+    max: 2,
+  },
+  {
+    label: "Space Complexity",
+    score: feedback.space_complexity_score,
+    max: 1,
+  },
+  {
+    label: "Code Quality",
+    score: feedback.code_quality_score,
+    max: 1,
+  },
+];
 
   const overallPercentage = Math.min(
     Math.max((feedback.overall_score / 10) * 100, 0),
@@ -328,13 +334,12 @@ export default function FeedbackPage() {
               </p>
 
               <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Your Design{" "}
+               Your DSA
                 <span className="text-orange-500">Feedback</span>
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">
-                Review your submission and identify areas where your design can
-                improve.
+                Review your submission and identify areas where your DSA solution can improve.
               </p>
             </div>
 
@@ -378,8 +383,7 @@ export default function FeedbackPage() {
                 </h2>
 
                 <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
-                  Based on the structure, extensibility, code quality, and
-                  edge-case handling in your submission.
+                 Based on correctness, approach, complexity, and code quality in your submission.
                 </p>
               </div>
 
@@ -431,7 +435,7 @@ export default function FeedbackPage() {
               </p>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
               {scoreItems.map((item) => {
                 const percentage =
                   item.max > 0 ? (item.score / item.max) * 100 : 0;

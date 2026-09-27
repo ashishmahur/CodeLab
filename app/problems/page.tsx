@@ -686,7 +686,7 @@ function FilterSelect({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className={`flex h-11 w-full items-center justify-between rounded-xl border bg-[#0d0e0f] pr-3 text-sm outline-none transition ${
+        className={`flex h-11 w-full items-center justify-between rounded-xl border bg-[#0d0e0f] pl-5 pr-3 text-sm outline-none transition ${
           open
             ? "border-orange-500/50 text-zinc-200"
             : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
@@ -695,7 +695,7 @@ function FilterSelect({
         <span className="flex min-w-0 items-center gap-2">
           {icon && <span className="text-zinc-600">{icon}</span>}
 
-          <span className="truncate">{value}</span>
+          <span className="truncate ">{value}</span>
         </span>
 
         <ChevronDown

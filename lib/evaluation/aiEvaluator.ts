@@ -2,10 +2,11 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 export type AIEvaluation = {
   overallScore: number;
-  designScore: number;
-  extensibilityScore: number;
+  correctnessScore: number;
+  approachScore: number;
+  timeComplexityScore: number;
+  spaceComplexityScore: number;
   codeQualityScore: number;
-  edgeCaseScore: number;
   strengths: string[];
   weaknesses: string[];
   suggestions: string[];
@@ -26,9 +27,9 @@ export async function evaluateWithAI(
   }
 
   const prompt = `
-You are an experienced Low Level Design interviewer and mentor.
+You are an experienced Data Structures and Algorithms interviewer and mentor.
 
-Evaluate the following student's LLD solution.
+Evaluate the following student's DSA solution.
 
 PROBLEM:
 ${problemTitle}
@@ -44,44 +45,47 @@ ${solution}
 
 Evaluate the submission based on:
 
-1. Design (0-4 points):
-   - Classes and responsibilities
-   - Abstraction
-   - Encapsulation
-   - Separation of concerns
-   - Object-oriented design quality
+1. Correctness (0-4 points):
+   - Does the solution solve the problem correctly?
+   - Does the logic produce the expected result?
+   - Check for logical errors and incorrect assumptions.
+   - Consider the provided problem requirements and examples.
 
-2. Extensibility (0-3 points):
-   - Ability to add future requirements
-   - Interfaces and abstractions
-   - Avoidance of tightly coupled logic
-   - Ease of changing behavior
+2. Approach (0-2 points):
+   - Is the chosen algorithm appropriate?
+   - Is the problem-solving approach logically sound?
+   - Are unnecessary operations avoided?
 
-3. Code Quality (0-2 points):
+3. Time Complexity (0-2 points):
+   - Analyze the actual time complexity of the submitted code.
+   - Compare it with the expected efficient approach.
+   - Do not assume an optimization that is not present in the code.
+
+4. Space Complexity (0-1 point):
+   - Analyze the actual auxiliary space used by the submitted code.
+   - Consider arrays, hash maps, recursion stacks, and other additional memory.
+
+5. Code Quality (0-1 point):
    - Naming
-   - Structure
    - Readability
+   - Structure
    - Maintainability
    - Avoidance of unnecessary duplication
 
-4. Edge Cases (0-1 point):
-   - Invalid inputs
-   - Boundary cases
-   - Failure scenarios
-   - Practical real-world cases
-
 IMPORTANT:
-- Multiple designs can be valid.
+- Multiple approaches can be valid.
 - Do not expect one specific implementation.
-- Do not reward the student merely for mentioning design patterns.
-- Judge whether the design actually makes sense.
-- Do not invent classes or behavior that are not present.
-- If the submission is incomplete, reflect that in the scores.
-- Give constructive feedback suitable for a student learning LLD.
-- Be specific about what is present or missing in the submission.
-- Do NOT return an overall score. The application will calculate it.
+- Judge the actual submitted code.
+- Do not invent code, logic, variables, or behavior that are not present.
+- If the submission is incomplete, reflect that in the correctness and other scores.
+- Do not give full correctness merely because the approach looks reasonable.
+- Carefully inspect the actual implementation.
+- Be constructive and specific.
+- Explain important mistakes clearly.
+- Do not return an overall score. The application will calculate it.
+- Return concise and specific feedback.
 
-Return concise and specific feedback.
+Return JSON matching the requested schema.
 `;
 
   const response = await ai.models.generateContent({
@@ -93,21 +97,25 @@ Return concise and specific feedback.
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          designScore: {
+          correctnessScore: {
             type: Type.INTEGER,
-            description: "Design score from 0 to 4.",
+            description: "Correctness score from 0 to 4.",
           },
-          extensibilityScore: {
+          approachScore: {
             type: Type.INTEGER,
-            description: "Extensibility score from 0 to 3.",
+            description: "Approach score from 0 to 2.",
+          },
+          timeComplexityScore: {
+            type: Type.INTEGER,
+            description: "Time complexity score from 0 to 2.",
+          },
+          spaceComplexityScore: {
+            type: Type.INTEGER,
+            description: "Space complexity score from 0 to 1.",
           },
           codeQualityScore: {
             type: Type.INTEGER,
-            description: "Code quality score from 0 to 2.",
-          },
-          edgeCaseScore: {
-            type: Type.INTEGER,
-            description: "Edge case score from 0 to 1.",
+            description: "Code quality score from 0 to 1.",
           },
           strengths: {
             type: Type.ARRAY,
@@ -129,10 +137,11 @@ Return concise and specific feedback.
           },
         },
         required: [
-          "designScore",
-          "extensibilityScore",
+          "correctnessScore",
+          "approachScore",
+          "timeComplexityScore",
+          "spaceComplexityScore",
           "codeQualityScore",
-          "edgeCaseScore",
           "strengths",
           "weaknesses",
           "suggestions",
@@ -147,46 +156,47 @@ Return concise and specific feedback.
 
   const result = JSON.parse(response.text);
 
-  const designScore = Math.max(
+  const correctnessScore = Math.max(
     0,
-    Math.min(4, Number(result.designScore) || 0)
+    Math.min(4, Number(result.correctnessScore) || 0)
   );
 
-  const extensibilityScore = Math.max(
+  const approachScore = Math.max(
     0,
-    Math.min(3, Number(result.extensibilityScore) || 0)
+    Math.min(2, Number(result.approachScore) || 0)
+  );
+
+  const timeComplexityScore = Math.max(
+    0,
+    Math.min(2, Number(result.timeComplexityScore) || 0)
+  );
+
+  const spaceComplexityScore = Math.max(
+    0,
+    Math.min(1, Number(result.spaceComplexityScore) || 0)
   );
 
   const codeQualityScore = Math.max(
     0,
-    Math.min(2, Number(result.codeQualityScore) || 0)
-  );
-
-  const edgeCaseScore = Math.max(
-    0,
-    Math.min(1, Number(result.edgeCaseScore) || 0)
+    Math.min(1, Number(result.codeQualityScore) || 0)
   );
 
   const overallScore =
-    designScore +
-    extensibilityScore +
-    codeQualityScore +
-    edgeCaseScore;
+    correctnessScore +
+    approachScore +
+    timeComplexityScore +
+    spaceComplexityScore +
+    codeQualityScore;
 
   return {
     overallScore,
-    designScore,
-    extensibilityScore,
+    correctnessScore,
+    approachScore,
+    timeComplexityScore,
+    spaceComplexityScore,
     codeQualityScore,
-    edgeCaseScore,
-    strengths: Array.isArray(result.strengths)
-      ? result.strengths
-      : [],
-    weaknesses: Array.isArray(result.weaknesses)
-      ? result.weaknesses
-      : [],
-    suggestions: Array.isArray(result.suggestions)
-      ? result.suggestions
-      : [],
+    strengths: Array.isArray(result.strengths) ? result.strengths : [],
+    weaknesses: Array.isArray(result.weaknesses) ? result.weaknesses : [],
+    suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
   };
 }

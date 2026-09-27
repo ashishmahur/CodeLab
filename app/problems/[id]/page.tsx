@@ -181,18 +181,19 @@ export default function ProblemPage() {
       const evaluation = evaluationData.evaluation;
 
       const { error: feedbackError } = await supabase
-        .from("feedback")
-        .insert({
-          attempt_id: attemptData.id,
-          overall_score: evaluation.overallScore,
-          design_score: evaluation.designScore,
-          extensibility_score: evaluation.extensibilityScore,
-          code_quality_score: evaluation.codeQualityScore,
-          edge_case_score: evaluation.edgeCaseScore,
-          strengths: evaluation.strengths,
-          weaknesses: evaluation.weaknesses,
-          suggestions: evaluation.suggestions,
-        });
+  .from("feedback")
+  .insert({
+    attempt_id: attemptData.id,
+    overall_score: evaluation.overallScore,
+    correctness_score: evaluation.correctnessScore,
+    approach_score: evaluation.approachScore,
+    time_complexity_score: evaluation.timeComplexityScore,
+    space_complexity_score: evaluation.spaceComplexityScore,
+    code_quality_score: evaluation.codeQualityScore,
+    strengths: evaluation.strengths,
+    weaknesses: evaluation.weaknesses,
+    suggestions: evaluation.suggestions,
+  });
 
       if (feedbackError) {
         throw feedbackError;
