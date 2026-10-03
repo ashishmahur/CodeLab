@@ -1,167 +1,255 @@
 import Link from "next/link";
-import Image from "next/image";
-import {
-  ArrowRight,
-  Code2,
-  Lightbulb,
-  Target,
-  Link2,
-} from "lucide-react";
+import { ArrowRight, Code2, Layers3, Sparkles } from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-900 text-zinc-100">
-      <section className="mx-auto max-w-[1500px] px-8 py-10 lg:px-14 lg:py-12">
+    <main className="min-h-screen overflow-hidden bg-[#0b0c0d] text-zinc-100">
+      {/* Hero */}
+      <section
+        className="relative border-b border-zinc-800/80"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      >
+        <div className="pointer-events-none absolute right-[12%] top-24 h-2 w-2 rounded-full bg-orange-500/80 shadow-[0_0_18px_rgba(249,115,22,0.45)]" />
 
-        {/* Heading */}
-        <div className="max-w-4xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
-            About CodeLab
-          </p>
+        <div className="pointer-events-none absolute bottom-20 left-[5%] h-1.5 w-1.5 rounded-full bg-orange-500/70 shadow-[0_0_14px_rgba(249,115,22,0.35)]" />
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Practice. Design. Improve.
-          </h1>
+        <div className="mx-auto max-w-[1500px] px-8 py-24 lg:px-14 lg:py-32">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shadow-[0_0_14px_rgba(249,115,22,0.3)]" />
 
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-400">
-            CodeLab is a focused Low Level Design practice platform built to
-            help developers improve their object-oriented design and problem
-            solving skills through practical problems and structured feedback.
-          </p>
-        </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-orange-500">
+                About CodeLab
+              </p>
+            </div>
 
-        {/* Features */}
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <div className="group rounded-xl border border-zinc-600 bg-zinc-800 p-7 transition duration-200 hover:-translate-y-2 hover:border-orange-400">
-            <Code2 className="h-8 w-8 text-orange-400 transition duration-200 group-hover:scale-110" />
+            <h1 className="mt-7 text-5xl font-semibold leading-[1.05] tracking-[-0.035em] text-zinc-100 sm:text-6xl lg:text-7xl">
+              A focused space
+              <br />
+              for better{" "}
+              <span className="text-orange-500">developers.</span>
+            </h1>
 
-            <h2 className="mt-5 text-xl font-semibold text-white">
-              Real-World Problems
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-zinc-400">
-              Practice common LLD problems such as Parking Lot, Elevator
-              System, Vending Machine, ATM, and Movie Ticket Booking.
+            <p className="mt-7 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
+              CodeLab is built for developers who want to go beyond simply
+              solving problems. Practice DSA, explore Low Level Design, and
+              use meaningful feedback to understand how you can improve.
             </p>
-          </div>
 
-          <div className="group rounded-xl border border-zinc-600 bg-zinc-800 p-7 transition duration-200 hover:-translate-y-2 hover:border-orange-400">
-            <Lightbulb className="h-8 w-8 text-orange-400 transition duration-200 group-hover:scale-110" />
-
-            <h2 className="mt-5 text-xl font-semibold text-white">
-              Structured Feedback
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-zinc-400">
-              Submit your design and receive feedback on design quality,
-              extensibility, code quality, and edge-case handling.
-            </p>
-          </div>
-
-          <div className="group rounded-xl border border-zinc-600 bg-zinc-800 p-7 transition duration-200 hover:-translate-y-2 hover:border-orange-400">
-            <Target className="h-8 w-8 text-orange-400 transition duration-200 group-hover:scale-110" />
-
-            <h2 className="mt-5 text-xl font-semibold text-white">
-              Improve Your Design Skills
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-zinc-400">
-              Review your attempts, understand areas for improvement, and
-              develop stronger Low Level Design thinking.
-            </p>
+            <Link
+              href="/problems"
+              className="group mt-9 inline-flex items-center gap-3 rounded-lg bg-orange-500 px-6 py-3.5 text-sm font-semibold text-zinc-950 transition-all duration-200 hover:bg-orange-400"
+            >
+              Start Practicing
+              <ArrowRight
+                size={17}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </Link>
           </div>
         </div>
+      </section>
 
-        {/* How CodeLab Works */}
-        <div className="mt-14">
-          <h2 className="text-2xl font-semibold text-white">
-            How CodeLab Works
+      {/* What We Do */}
+      <section
+        className="relative border-b border-zinc-800/80"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      >
+        <div className="mx-auto max-w-[1100px] px-8 py-24 lg:py-28">
+          {/* Section heading */}
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shadow-[0_0_14px_rgba(249,115,22,0.3)]" />
+
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-orange-500">
+                What We Do
+              </p>
+            </div>
+
+            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-100 sm:text-4xl lg:text-5xl">
+              Practice with a purpose.
+            </h2>
+
+            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-400">
+              CodeLab brings together structured coding practice and design
+              problems in one focused workspace. The goal is not just to help
+              you complete another problem, but to help you understand your
+              approach, recognize weaknesses, and become a better problem
+              solver over time.
+            </p>
+          </div>
+
+          {/* Main cards */}
+          <div className="mt-14 grid gap-5 md:grid-cols-2">
+            {/* DSA */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#101112] p-7 sm:p-8">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/20 bg-orange-500/[0.07]">
+                <Code2 size={22} className="text-orange-500" />
+              </div>
+
+              <h3 className="mt-6 text-xl font-semibold text-zinc-100">
+                DSA Practice
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-zinc-500">
+                Build stronger problem-solving skills through carefully
+                structured DSA problems covering fundamental and interview
+                focused concepts.
+              </p>
+
+              <div className="mt-6 space-y-2.5 text-sm text-zinc-400">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Arrays, strings, trees, graphs and more
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Different difficulty levels
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Practice with an in-built code editor
+                </div>
+              </div>
+
+              <Link
+                href="/problems"
+                className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition-colors hover:text-orange-400"
+              >
+                Explore problems
+                <ArrowRight
+                  size={15}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </div>
+
+            {/* LLD */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#101112] p-7 sm:p-8">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-orange-500/20 bg-orange-500/[0.07]">
+                <Layers3 size={22} className="text-orange-500" />
+              </div>
+
+              <h3 className="mt-6 text-xl font-semibold text-zinc-100">
+                LLD Practice
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-zinc-500">
+                Work through practical Low Level Design problems and learn to
+                think about objects, responsibilities, relationships, and
+                extensible system structures.
+              </p>
+
+              <div className="mt-6 space-y-2.5 text-sm text-zinc-400">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Real-world design scenarios
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Object-oriented design thinking
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Focus on clean and extensible designs
+                </div>
+              </div>
+
+              <Link
+                href="/problems"
+                className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition-colors hover:text-orange-400"
+              >
+                Explore problems
+                <ArrowRight
+                  size={15}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </div>
+          </div>
+
+          {/* AI Feedback */}
+          <div className="mt-6 flex flex-col gap-5 rounded-2xl border border-zinc-800 bg-[#101112] p-6 sm:flex-row sm:items-center sm:p-7">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-orange-500/20 bg-orange-500/[0.07]">
+              <Sparkles size={21} className="text-orange-500" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-semibold text-zinc-100">
+                Learn from your attempts
+              </h3>
+
+              <p className="mt-1.5 max-w-3xl text-sm leading-6 text-zinc-500">
+                CodeLab uses AI-powered evaluation to give structured feedback
+                on your submitted solutions, helping you understand what went
+                well, what could be improved, and what to focus on next.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Goal */}
+      <section
+        className="relative"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      >
+        <div className="pointer-events-none absolute left-[11%] top-28 h-1.5 w-1.5 rounded-full bg-orange-500/70 shadow-[0_0_14px_rgba(249,115,22,0.35)]" />
+
+        <div className="pointer-events-none absolute right-[13%] bottom-24 h-2 w-2 rounded-full bg-orange-500/70 shadow-[0_0_16px_rgba(249,115,22,0.35)]" />
+
+        <div className="mx-auto max-w-3xl px-8 py-24 text-center lg:py-32">
+          <div className="flex items-center justify-center gap-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shadow-[0_0_14px_rgba(249,115,22,0.3)]" />
+
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-orange-500">
+              Our Goal
+            </p>
+          </div>
+
+          <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-100 sm:text-4xl lg:text-5xl">
+            Help you become a more{" "}
+            <span className="text-orange-500">confident developer.</span>
           </h2>
 
-          <div className="mt-7 flex flex-col items-center gap-3 md:flex-row md:justify-between">
-            <div className="flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-4 md:w-auto md:min-w-[180px]">
-              <span className="text-sm font-semibold text-zinc-200">
-                Choose Problem
-              </span>
-            </div>
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-zinc-500 sm:text-base">
+            Keep solving, keep learning, and take one more step towards the
+            developer you want to be.
+          </p>
 
-            <ArrowRight className="hidden h-5 w-5 shrink-0 text-orange-400 md:block" />
-
-            <div className="flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-4 md:w-auto md:min-w-[180px]">
-              <span className="text-sm font-semibold text-zinc-200">
-                Design Solution
-              </span>
-            </div>
-
-            <ArrowRight className="hidden h-5 w-5 shrink-0 text-orange-400 md:block" />
-
-            <div className="flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-4 md:w-auto md:min-w-[180px]">
-              <span className="text-sm font-semibold text-zinc-200">
-                Submit
-              </span>
-            </div>
-
-            <ArrowRight className="hidden h-5 w-5 shrink-0 text-orange-400 md:block" />
-
-            <div className="flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-4 md:w-auto md:min-w-[180px]">
-              <span className="text-sm font-semibold text-zinc-200">
-                AI Evaluation
-              </span>
-            </div>
-
-            <ArrowRight className="hidden h-5 w-5 shrink-0 text-orange-400 md:block" />
-
-            <div className="flex w-full items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-4 md:w-auto md:min-w-[180px]">
-              <span className="text-sm font-semibold text-zinc-200">
-                Improve
-              </span>
-            </div>
-          </div>
+          <Link
+            href="/problems"
+            className="group mt-8 inline-flex items-center gap-3 rounded-lg bg-orange-500 px-6 py-3.5 text-sm font-semibold text-zinc-950 transition-all duration-200 hover:bg-orange-400"
+          >
+            Explore Problems
+            <ArrowRight
+              size={17}
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
+          </Link>
         </div>
-
-        {/* Author */}
-        <div className="mt-24 border-t border-zinc-800 pt-10">
-          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:justify-between sm:text-left">
-
-            <div className="flex items-center gap-5">
-          <div className="relative h-24 w-24 overflow-hidden rounded-full">
-                    <Image
-                        src="/ashish.png"
-                        alt="Ashish Mahur"
-                        fill
-                        className="object-cover"
-                    />
-                    </div>
-
-              <div>
-                <p className="text-sm text-zinc-500">
-                  Built by
-                </p>
-
-                <p className="mt-1 text-xl font-semibold text-white">
-                  Ashish Mahur
-                </p>
-              </div>
-            </div>
-
-            <a
-              href="https://www.linkedin.com/in/ashish-mahur-473a6234b/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-zinc-600 bg-zinc-800 px-5 py-2.5 text-sm font-medium text-zinc-200 transition duration-200 hover:border-orange-400 hover:text-orange-400"
-            >
-              <Link2 className="h-4 w-4" />
-              Connect on LinkedIn
-            </a>
-          </div>
-        </div>
-
       </section>
 
       {/* Footer */}
-      <footer className="mt-6 border-t border-zinc-800 bg-zinc-950">
-        <div className="mx-auto flex max-w-[1500px] items-center justify-between px-8 py-5 text-xs lg:px-14">
-          <p className="text-zinc-500">
+      <footer className="border-t border-zinc-800/80 bg-[#090a0b]">
+        <div className="mx-auto max-w-[1500px] px-8 py-5 lg:px-14">
+          <p className="text-xs text-zinc-600">
             © 2026 CodeLab. All rights reserved.
           </p>
         </div>

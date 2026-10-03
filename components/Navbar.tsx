@@ -3,24 +3,52 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Code2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Auth pages have their own premium layout.
-if (
-  pathname.startsWith("/auth") ||
-  pathname.startsWith("/dashboard") ||
-  pathname.startsWith("/profile") ||
-  pathname.startsWith("/problems") ||
-  pathname === "/history" ||
-  pathname.startsWith("/feedback/")
-) {
-  return null;
-}
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY <= 10) {
+        setShowNavbar(true);
+      } else if (currentScrollY > lastScrollY) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [lastScrollY]);
+
+  if (
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/problems") ||
+    pathname === "/history" ||
+    pathname.startsWith("/feedback/")
+  ) {
+    return null;
+  }
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
+    <nav
+      className={`sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl transition-transform duration-300 ${
+        showNavbar ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
       <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-8 lg:px-14">
         <Link
           href="/"
