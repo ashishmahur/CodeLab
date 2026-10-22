@@ -107,13 +107,20 @@ export default function ProblemsPage() {
           return;
         }
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .single();
+    const { data: profile } = await supabase
+  .from("profiles")
+  .select("full_name")
+  .eq("id", user.id)
+  .maybeSingle();
 
-        setUserName(profile?.full_name || "Developer");
+const name =
+  profile?.full_name?.trim() ||
+  user.user_metadata?.full_name?.trim() ||
+  user.user_metadata?.name?.trim() ||
+  user.email?.split("@")[0] ||
+  "Developer";
+
+setUserName(name);
 
         const { data: problemData, error: problemError } = await supabase
           .from("problems")

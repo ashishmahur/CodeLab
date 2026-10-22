@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DashboardUserMenu from "@/components/DashboardUserMenu";
 import EditProfileModal from "@/components/EditProfileModal";
 import {
   ArrowUpRight,
@@ -124,14 +125,7 @@ export default async function ProfilePage() {
                 Community
               </Link>
 
-              <Link
-                href="/profile"
-                className="group relative flex h-11 items-center gap-3 overflow-hidden rounded-xl border border-orange-500/40 bg-orange-500/[0.08] px-4 text-sm font-medium text-orange-400"
-              >
-                <span className="absolute left-0 top-0 h-full w-[2px] bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.9)]" />
-                <User className="h-[18px] w-[18px]" />
-                Profile
-              </Link>
+           
 
               <Link
                 href="/settings"
@@ -188,24 +182,9 @@ export default async function ProfilePage() {
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
             </div>
 
-            <Link
-
-            href="/profile"
-            className="flex items-center gap-3 rounded-xl px-2.5 py-1.5 transition"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-orange-500/50 bg-orange-500/10 text-sm font-bold text-orange-400">
-                {initial}
-              </div>
-
-              <div className="hidden text-left sm:block">
-                <p className="text-sm font-medium text-zinc-200">
-                  {fullName}
-                </p>
-                <p className="text-xs text-zinc-500">{role}</p>
-              </div>
-
-              <ChevronRight className="hidden h-4 w-4 rotate-90 text-zinc-600 sm:block" />
-            </Link>
+           <div className="relative z-50">
+  <DashboardUserMenu name={fullName} />
+</div>
             
           </div>
                   </header>

@@ -1,14 +1,19 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Code2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import DashboardUserMenu from "@/components/DashboardUserMenu";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +36,56 @@ export default function Navbar() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [lastScrollY]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!active) return;
+
+      if (!user) {
+        setUserName(null);
+        setAuthLoading(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      setUserName(
+        profile?.full_name?.trim() ||
+          user.user_metadata?.full_name?.trim() ||
+          user.user_metadata?.name?.trim() ||
+          user.email?.split("@")[0] ||
+          "Developer"
+      );
+
+      setAuthLoading(false);
+    }
+
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      loadUser();
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (
     pathname.startsWith("/auth") ||
@@ -83,12 +138,17 @@ export default function Navbar() {
             About
           </Link>
 
-          <Link
-            href="/auth/login"
-            className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-orange-400 transition-all duration-200 hover:border-orange-500 hover:bg-orange-500 hover:text-zinc-950"
-          >
-            Sign in
-          </Link>
+          {!authLoading &&
+            (userName ? (
+              <DashboardUserMenu name={userName} />
+            ) : (
+              <Link
+                href="/auth/login"
+                className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-orange-400 transition-all duration-200 hover:border-orange-500 hover:bg-orange-500 hover:text-zinc-950"
+              >
+                Sign in
+              </Link>
+            ))}
         </div>
       </div>
     </nav>

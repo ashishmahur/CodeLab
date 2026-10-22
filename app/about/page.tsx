@@ -237,7 +237,7 @@ export default function AboutPage() {
             href="/problems"
             className="group mt-8 inline-flex items-center gap-3 rounded-lg bg-orange-500 px-6 py-3.5 text-sm font-semibold text-zinc-950 transition-all duration-200 hover:bg-orange-400"
           >
-            Explore Problems
+            Start Building
             <ArrowRight
               size={17}
               className="transition-transform duration-200 group-hover:translate-x-1"
